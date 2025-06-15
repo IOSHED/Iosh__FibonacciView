@@ -1,0 +1,12 @@
+[package]
+name = "fibo_view"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fibo_calc = { path = "../fibo_calc" }
+num-bigint = "0.4.6"
+
+# Terminal
+ratatui = "0.29.0"
+crossterm = "0.29.0"
