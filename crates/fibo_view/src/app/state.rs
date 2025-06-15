@@ -2,7 +2,6 @@ use crate::domain;
 use num_bigint::BigInt;
 use ratatui::widgets::ListState;
 use std::fmt::Display;
-use std::str::FromStr;
 
 #[derive(PartialEq)]
 pub enum InputMode {
@@ -90,11 +89,17 @@ impl AppState {
     }
 
     pub fn add_filter(&mut self) {
-        if let Ok(value) = BigInt::from_str(&self.filter_value) {
-            self.filters.push(Filter {
-                filter_type: self.filter_type.clone(),
-                value: value.clone(),
-            });
+        match domain::calculate_expr(&self.filter_value) {
+            Ok(n) => {
+                self.filters.push(Filter {
+                    filter_type: self.filter_type.clone(),
+                    value: BigInt::from(n),
+                });
+            },
+            Err(e) => {
+                self.error = Some(e);
+                return;
+            }
         }
     }
 
@@ -122,35 +127,34 @@ impl AppState {
         self.error = None;
         self.count_use += 1;
 
-        let start1 = match BigInt::from_str(&self.start1) {
-            Ok(n) => n,
-            Err(_) => {
-                self.error = Some("Invalid start number 1 (input must be integer)".to_string());
+        let start1 = match domain::calculate_expr(&self.start1) {
+            Ok(n) => BigInt::from(n),
+            Err(e) => {
+                self.error = Some(e);
                 return;
             }
         };
 
-        let start2 = match BigInt::from_str(&self.start2) {
-            Ok(n) => n,
-            Err(_) => {
-                self.error = Some("Invalid start number 2 (input must be integer)".to_string());
+        let start2 = match domain::calculate_expr(&self.start2) {
+            Ok(n) => BigInt::from(n),
+            Err(e) => {
+                self.error = Some(e);
                 return;
             }
         };
 
-        let range_start = match self.range_start.parse::<usize>() {
-            Ok(n) => n,
-            Err(_) => {
-                self.error =
-                    Some("Invalid range start (input must be unsigned integer)".to_string());
+        let range_start = match domain::calculate_expr(&self.range_start) {
+            Ok(n) => n as usize,
+            Err(e) => {
+                self.error = Some(e);
                 return;
             }
         };
 
-        let range_end = match self.range_end.parse::<usize>() {
-            Ok(n) => n,
-            Err(_) => {
-                self.error = Some("Invalid range end (input must be unsigned integer)".to_string());
+        let range_end = match domain::calculate_expr(&self.range_end) {
+            Ok(n) => n as usize,
+            Err(e) => {
+                self.error = Some(e);
                 return;
             }
         };
