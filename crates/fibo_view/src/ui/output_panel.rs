@@ -1,9 +1,9 @@
+use crate::app::AppState;
+use ratatui::widgets::Block;
 use ratatui::{
     prelude::*,
     widgets::{List, ListItem},
 };
-use ratatui::widgets::Block;
-use crate::app::AppState;
 
 pub fn render(state: &mut AppState) -> List {
     if state.results.is_empty() {
@@ -32,7 +32,7 @@ pub fn render(state: &mut AppState) -> List {
         .enumerate()
         .map(|(i, num)| {
             let mut formatted = if num.to_string().len() > 50 {
-                format!("{}...",  &num.to_string()[..47])
+                format!("{}...", &num.to_string()[..47])
             } else {
                 format!("{}", num)
             };
@@ -41,13 +41,11 @@ pub fn render(state: &mut AppState) -> List {
                 formatted = format!("[{}]", formatted).bold().yellow().to_string();
             }
 
-            Line::from(formatted)
-                .style(if i % 2 == 0 {
-                    Style::new().white()
-                } else {
-                    Style::new().light_blue()
-                })
-
+            Line::from(formatted).style(if i % 2 == 0 {
+                Style::new().white()
+            } else {
+                Style::new().light_blue()
+            })
         })
         .collect();
 

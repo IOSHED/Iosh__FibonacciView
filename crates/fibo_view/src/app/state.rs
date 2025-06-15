@@ -1,8 +1,8 @@
-use std::fmt::Display;
-use std::str::FromStr;
+use crate::domain;
 use num_bigint::BigInt;
 use ratatui::widgets::ListState;
-use crate::domain;
+use std::fmt::Display;
+use std::str::FromStr;
 
 #[derive(PartialEq)]
 pub enum InputMode {
@@ -31,7 +31,8 @@ impl Display for FilterType {
         let str = match self {
             FilterType::Ge => "≥",
             FilterType::Le => "≤",
-        }.to_string();
+        }
+        .to_string();
         write!(f, "{}", str)
     }
 }
@@ -140,7 +141,8 @@ impl AppState {
         let range_start = match self.range_start.parse::<usize>() {
             Ok(n) => n,
             Err(_) => {
-                self.error = Some("Invalid range start (input must be unsigned integer)".to_string());
+                self.error =
+                    Some("Invalid range start (input must be unsigned integer)".to_string());
                 return;
             }
         };
@@ -158,11 +160,8 @@ impl AppState {
             return;
         }
 
-        self.results = domain::calculate_fibonacci(
-            (start1, start2),
-            range_start..range_end,
-            &self.filters
-        );
+        self.results =
+            domain::calculate_fibonacci((start1, start2), range_start..range_end, &self.filters);
         self.list_state.select(Some(0));
     }
 }

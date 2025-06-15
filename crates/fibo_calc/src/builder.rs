@@ -1,14 +1,18 @@
 use num_bigint::BigInt;
 use std::ops::Range;
 
+
+type FilterFn = Box<dyn Fn(&BigInt) -> bool>;
+
+#[derive(Default)]
 pub struct FiboBuilder {
     start_nums: Option<(BigInt, BigInt)>,
     range_by_index: Option<Range<usize>>,
-    other_filters: Vec<Box<dyn Fn(&BigInt) -> bool>>,
+    other_filters: Vec<FilterFn>,
 }
 
 impl FiboBuilder {
-    pub fn get_filters(&self) -> &[Box<dyn Fn(&BigInt) -> bool>] {
+    pub fn get_filters(&self) -> &[FilterFn] {
         &self.other_filters
     }
 
@@ -41,12 +45,3 @@ impl FiboBuilder {
 }
 
 
-impl Default for FiboBuilder {
-    fn default() -> Self {
-        Self {
-            start_nums: None,
-            range_by_index: None,
-            other_filters: vec![],
-        }
-    }
-}

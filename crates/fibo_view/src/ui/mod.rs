@@ -2,11 +2,11 @@ mod input_panel;
 mod output_panel;
 
 use ratatui::{
+    Frame,
     layout::{Constraint, Layout},
     prelude::*,
     text::Line,
     widgets::{Block, Paragraph},
-    Frame,
 };
 
 use crate::app::AppState;
@@ -69,23 +69,14 @@ pub fn draw(frame: &mut Frame, state: &mut AppState) {
         status_area,
     );
     let status_inner = Block::bordered().inner(status_area);
-    frame.render_widget(
-        Paragraph::new(status_line).centered(),
-        status_inner,
-    );
+    frame.render_widget(Paragraph::new(status_line).centered(), status_inner);
 
     frame.render_widget(&input_block, left_area);
     frame.render_widget(&output_block, right_area);
 
     let inner_left = input_block.inner(left_area);
-    frame.render_widget(
-        input_panel::render(state),
-        inner_left
-    );
+    frame.render_widget(input_panel::render(state), inner_left);
 
     let inner_right = output_block.inner(right_area);
-    frame.render_widget(
-        output_panel::render(state),
-        inner_right
-    );
+    frame.render_widget(output_panel::render(state), inner_right);
 }

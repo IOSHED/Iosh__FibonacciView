@@ -1,11 +1,11 @@
 mod event;
 mod state;
 
+pub use self::event::handle_events;
+pub use self::state::{AppState, Filter, FilterType, InputMode};
+use crate::ui;
 use ratatui::DefaultTerminal;
 use std::io;
-use crate::ui;
-pub use self::state::{AppState, InputMode, FilterType, Filter};
-pub use self::event::handle_events;
 
 pub struct TerminalApp {
     terminal: DefaultTerminal,

@@ -1,6 +1,6 @@
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use crate::app::{AppState, FilterType};
 use crate::app::state::InputMode;
+use crate::app::{AppState, FilterType};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 
 pub fn handle_events(state: &mut AppState) -> std::io::Result<bool> {
     match event::read()? {

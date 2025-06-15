@@ -1,45 +1,52 @@
+use crate::app::{AppState, InputMode};
 use ratatui::{
     prelude::*,
     text::{Line, Text},
     widgets::{Paragraph, Wrap},
 };
-use crate::app::{AppState, InputMode};
 
 pub fn render(state: &AppState) -> Paragraph {
     let mut lines = vec![
         Line::from(""),
-        Line::from(format!("🔢 Start Number 1 [1]: {}", state.start1))
-            .style(if state.input_mode == InputMode::Start1 {
+        Line::from(format!("🔢 Start Number 1 [1]: {}", state.start1)).style(
+            if state.input_mode == InputMode::Start1 {
                 Style::new().bold().yellow()
             } else {
                 Style::new().white()
-            }),
-        Line::from(format!("🔢 Start Number 2 [2]: {}", state.start2))
-            .style(if state.input_mode == InputMode::Start2 {
+            },
+        ),
+        Line::from(format!("🔢 Start Number 2 [2]: {}", state.start2)).style(
+            if state.input_mode == InputMode::Start2 {
                 Style::new().bold().yellow()
             } else {
                 Style::new().white()
-            }),
+            },
+        ),
         Line::from(""),
-        Line::from(format!("📍 Range Start [s]: {}", state.range_start))
-            .style(if state.input_mode == InputMode::RangeStart {
+        Line::from(format!("📍 Range Start [s]: {}", state.range_start)).style(
+            if state.input_mode == InputMode::RangeStart {
                 Style::new().bold().yellow()
             } else {
                 Style::new().light_blue()
-            }),
-        Line::from(format!("📍 Range End [e]: {}", state.range_end))
-            .style(if state.input_mode == InputMode::RangeEnd {
+            },
+        ),
+        Line::from(format!("📍 Range End [e]: {}", state.range_end)).style(
+            if state.input_mode == InputMode::RangeEnd {
                 Style::new().bold().yellow()
             } else {
                 Style::new().light_blue()
-            }),
+            },
+        ),
         Line::from(""),
-        Line::from(format!("🔍 Filter Value [v]: {}{}", state.filter_type, state.filter_value))
-            .style(if state.input_mode == InputMode::FilterValue {
-                Style::new().bold().yellow()
-            } else {
-                Style::new().light_green()
-            }),
+        Line::from(format!(
+            "🔍 Filter Value [v]: {}{}",
+            state.filter_type, state.filter_value
+        ))
+        .style(if state.input_mode == InputMode::FilterValue {
+            Style::new().bold().yellow()
+        } else {
+            Style::new().light_green()
+        }),
         Line::from(""),
         Line::from("🔍 Active Filters:").style(Style::new().bold().magenta()),
     ];
@@ -48,8 +55,15 @@ pub fn render(state: &AppState) -> Paragraph {
         lines.push(Line::from("   (No filters applied)").style(Style::new().italic().dark_gray()));
     } else {
         for (i, filter) in state.filters.iter().enumerate() {
-            lines.push(Line::from(format!("   {}. {} {}", i + 1, filter.filter_type, filter.value))
-                .style(Style::new().light_magenta()));
+            lines.push(
+                Line::from(format!(
+                    "   {}. {} {}",
+                    i + 1,
+                    filter.filter_type,
+                    filter.value
+                ))
+                .style(Style::new().light_magenta()),
+            );
         }
     }
 
@@ -69,8 +83,10 @@ pub fn render(state: &AppState) -> Paragraph {
     let mut text = Text::from(lines);
     if let Some(err) = &state.error {
         text.lines.push(Line::from(""));
-        text.lines.push(Line::from("❌ Error:").style(Style::new().bold().red()));
-        text.lines.push(Line::from(format!("   {}", err)).style(Style::new().red()));
+        text.lines
+            .push(Line::from("❌ Error:").style(Style::new().bold().red()));
+        text.lines
+            .push(Line::from(format!("   {}", err)).style(Style::new().red()));
     }
 
     Paragraph::new(text).wrap(Wrap { trim: true })
