@@ -52,7 +52,7 @@ impl Default for AppState {
             start1: "0".to_string(),
             start2: "1".to_string(),
             range_start: "0".to_string(),
-            range_end: "100".to_string(),
+            range_end: "20".to_string(),
             filter_value: "10".to_string(),
             filters: Vec::new(),
             results: Vec::new(),
