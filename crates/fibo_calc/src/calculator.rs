@@ -17,11 +17,13 @@ impl FiboCalc {
             return vec![];
         }
 
+
         let implementation_fibo = LinealFibo::new(self.builder.get_start_nums());
 
         let Range { start, end } = self.builder.get_range_by_id().unwrap();
-        let mut result_fibo: Vec<BigInt> = if end > 1 {
-            implementation_fibo.skip(start).take(end - 2).collect()
+
+        let mut result_fibo: Vec<BigInt> = if end >= 2 {
+            implementation_fibo.take(end - 2).collect()
         } else {
             vec![]
         };
@@ -29,7 +31,8 @@ impl FiboCalc {
         let mut filters = self.builder.get_filters();
         self.merge_result_fibo_and_start_nums(&mut result_fibo)
             .into_iter()
-            .filter(|n| filters.all(|func| func(n)))
+            .skip(start)
+            .filter(|n| filters.iter().all(|func| func(n)))
             .collect()
     }
 

@@ -1,6 +1,5 @@
 use num_bigint::BigInt;
 use std::ops::Range;
-use std::slice::Iter;
 
 pub struct FiboBuilder {
     start_nums: Option<(BigInt, BigInt)>,
@@ -9,8 +8,8 @@ pub struct FiboBuilder {
 }
 
 impl FiboBuilder {
-    pub fn get_filters(&self) -> Iter<'_, Box<dyn Fn(&BigInt) -> bool>> {
-        self.other_filters.iter().clone()
+    pub fn get_filters(&self) -> &[Box<dyn Fn(&BigInt) -> bool>] {
+        &self.other_filters
     }
 
     pub fn get_range_by_id(&self) -> Option<Range<usize>> {
