@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use ratatui::widgets::ListState;
@@ -25,6 +26,16 @@ pub enum FilterType {
     Le,
 }
 
+impl Display for FilterType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            FilterType::Ge => "≥",
+            FilterType::Le => "≤",
+        }.to_string();
+        write!(f, "{}", str)
+    }
+}
+
 pub struct AppState {
     // Input fields
     pub start1: String,
@@ -35,6 +46,7 @@ pub struct AppState {
 
     // Filters
     pub filters: Vec<Filter>,
+    pub filter_type: FilterType,
 
     // Output
     pub results: Vec<BigInt>,
@@ -54,6 +66,7 @@ impl Default for AppState {
             range_start: "0".to_string(),
             range_end: "20".to_string(),
             filter_value: "10".to_string(),
+            filter_type: FilterType::Ge,
             filters: Vec::new(),
             results: Vec::new(),
             list_state: ListState::default(),
@@ -78,10 +91,9 @@ impl AppState {
     pub fn add_filter(&mut self) {
         if let Ok(value) = BigInt::from_str(&self.filter_value) {
             self.filters.push(Filter {
-                filter_type: FilterType::Ge,
+                filter_type: self.filter_type.clone(),
                 value: value.clone(),
             });
-            self.filter_value = "10".to_string();
         }
     }
 

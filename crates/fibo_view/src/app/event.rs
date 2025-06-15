@@ -1,5 +1,5 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use crate::app::AppState;
+use crate::app::{AppState, FilterType};
 use crate::app::state::InputMode;
 
 pub fn handle_events(state: &mut AppState) -> std::io::Result<bool> {
@@ -24,6 +24,12 @@ fn handle_keys(key: KeyEvent, state: &mut AppState) -> std::io::Result<bool> {
             KeyCode::Char('s') => {
                 state.input_mode = InputMode::RangeStart;
                 state.range_start.clear();
+            }
+            KeyCode::Char('g') => {
+                state.filter_type = FilterType::Ge;
+            }
+            KeyCode::Char('l') => {
+                state.filter_type = FilterType::Le;
             }
             KeyCode::Char('e') => {
                 state.input_mode = InputMode::RangeEnd;

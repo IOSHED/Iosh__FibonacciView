@@ -3,7 +3,7 @@ use ratatui::{
     text::{Line, Text},
     widgets::{Paragraph, Wrap},
 };
-use crate::app::{AppState, FilterType, InputMode};
+use crate::app::{AppState, InputMode};
 
 pub fn render(state: &AppState) -> Paragraph {
     let mut lines = vec![
@@ -34,7 +34,7 @@ pub fn render(state: &AppState) -> Paragraph {
                 Style::new().light_blue()
             }),
         Line::from(""),
-        Line::from(format!("🔍 Filter Value [v]: {}", state.filter_value))
+        Line::from(format!("🔍 Filter Value [v]: {}{}", state.filter_type, state.filter_value))
             .style(if state.input_mode == InputMode::FilterValue {
                 Style::new().bold().yellow()
             } else {
@@ -48,11 +48,7 @@ pub fn render(state: &AppState) -> Paragraph {
         lines.push(Line::from("   (No filters applied)").style(Style::new().italic().dark_gray()));
     } else {
         for (i, filter) in state.filters.iter().enumerate() {
-            let symbol = match filter.filter_type {
-                FilterType::Ge => "≥",
-                FilterType::Le => "≤",
-            };
-            lines.push(Line::from(format!("   {}. {} {}", i + 1, symbol, filter.value))
+            lines.push(Line::from(format!("   {}. {} {}", i + 1, filter.filter_type, filter.value))
                 .style(Style::new().light_magenta()));
         }
     }
@@ -61,12 +57,13 @@ pub fn render(state: &AppState) -> Paragraph {
         Line::from(""),
         Line::from("⚡ Actions:").style(Style::new().bold().cyan()),
         Line::from("   [a] Add filter    [d] Delete filter").style(Style::new().cyan()),
+        Line::from("   [g] Filter ≥      [l] Filter ≤").style(Style::new().cyan()),
         Line::from("   [r] Calculate     [c] Clear filters").style(Style::new().cyan()),
         Line::from(""),
         Line::from("🎮 Navigation:").style(Style::new().bold().green()),
-        Line::from("   ↑↓ Navigate results").style(Style::new().green()),
         Line::from("   1,2,s,e,v Edit fields").style(Style::new().green()),
         Line::from("   ESC/Enter Exit edit mode").style(Style::new().green()),
+        Line::from("   ↑↓ Navigate results").style(Style::new().green()),
     ]);
 
     let mut text = Text::from(lines);
