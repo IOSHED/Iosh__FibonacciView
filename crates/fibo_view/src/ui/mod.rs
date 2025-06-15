@@ -2,59 +2,90 @@ mod input_panel;
 mod output_panel;
 
 use ratatui::{
-    Frame,
     layout::{Constraint, Layout},
-    prelude::{Span, Style},
-    style::Stylize,
+    prelude::*,
     text::Line,
-    widgets::Block,
+    widgets::{Block, Paragraph},
+    Frame,
 };
 
 use crate::app::AppState;
 
 pub fn draw(frame: &mut Frame, state: &mut AppState) {
     let vertical = Layout::vertical([
-        Constraint::Length(1),
+        Constraint::Length(3),
         Constraint::Min(0),
-        Constraint::Length(1),
+        Constraint::Length(3),
     ]);
     let [title_area, main_area, status_area] = vertical.areas(frame.area());
     let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
     let [left_area, right_area] = horizontal.areas(main_area);
 
-    // Title
-    let mut main_title = Line::from("FIBONACCI").centered().cyan();
-    main_title.push_span(Span::raw(" VIEW").style(Style::new().light_red()));
+    let title_text = "🔢 FIBONACCI CALCULATOR 🔢";
+    let title_line = Line::from(title_text)
+        .centered()
+        .style(Style::new().bold().cyan());
 
-    // Status
+    let subtitle_line = Line::from("Interactive Fibonacci Sequence Generator")
+        .centered()
+        .style(Style::new().italic().light_blue());
+
     let status_text = format!(
-        " Uses: {} | Elements: {} | Filters: {} ",
+        "📊 Calculations: {} | 📋 Results: {} | 🔍 Filters: {} | ⌨️  Press 'q' to quit",
         state.count_use,
         state.results.len(),
         state.filters.len()
     );
-    let status_title = Line::from(status_text);
+    let status_line = Line::from(status_text)
+        .centered()
+        .style(Style::new().bold().green());
 
-    // Create blocks
-    let input_block = Block::bordered().title(" Input ").light_red();
-    let output_block = Block::bordered().title(" Output ").cyan();
+    let input_block = Block::bordered()
+        .title(" 📝 Input Parameters ")
+        .title_style(Style::new().bold().light_red())
+        .border_style(Style::new().light_red());
 
-    // Draw title and status
-    frame.render_widget(Block::bordered().title(main_title).dark_gray(), title_area);
+    let output_block = Block::bordered()
+        .title(" 📊 Fibonacci Results ")
+        .title_style(Style::new().bold().cyan())
+        .border_style(Style::new().cyan());
+
     frame.render_widget(
-        Block::bordered().title(status_title).dark_gray(),
-        status_area,
+        Block::bordered()
+            .title_style(Style::new().bold().cyan())
+            .border_style(Style::new().cyan()),
+        title_area,
+    );
+    let title_inner = Block::bordered().inner(title_area);
+    frame.render_widget(
+        Paragraph::new(vec![title_line, subtitle_line]).centered(),
+        title_inner,
     );
 
-    // Render widgets by reference
+    frame.render_widget(
+        Block::bordered()
+            .title_style(Style::new().bold().green())
+            .border_style(Style::new().green()),
+        status_area,
+    );
+    let status_inner = Block::bordered().inner(status_area);
+    frame.render_widget(
+        Paragraph::new(status_line).centered(),
+        status_inner,
+    );
+
     frame.render_widget(&input_block, left_area);
     frame.render_widget(&output_block, right_area);
 
-    // Draw input panel content
     let inner_left = input_block.inner(left_area);
-    frame.render_widget(input_panel::render(state), inner_left);
+    frame.render_widget(
+        input_panel::render(state),
+        inner_left
+    );
 
-    // Draw output panel content
     let inner_right = output_block.inner(right_area);
-    frame.render_widget(output_panel::render(state), inner_right);
+    frame.render_widget(
+        output_panel::render(state),
+        inner_right
+    );
 }

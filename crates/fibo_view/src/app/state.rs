@@ -1,7 +1,7 @@
-use crate::domain;
+use std::str::FromStr;
 use num_bigint::BigInt;
 use ratatui::widgets::ListState;
-use std::str::FromStr;
+use crate::domain;
 
 #[derive(PartialEq)]
 pub enum InputMode {
@@ -81,10 +81,7 @@ impl AppState {
                 filter_type: FilterType::Ge,
                 value: value.clone(),
             });
-            self.filters.push(Filter {
-                filter_type: FilterType::Le,
-                value: value + BigInt::from(100),
-            });
+            self.filter_value = "10".to_string();
         }
     }
 
@@ -115,7 +112,7 @@ impl AppState {
         let start1 = match BigInt::from_str(&self.start1) {
             Ok(n) => n,
             Err(_) => {
-                self.error = Some("Invalid start number 1".to_string());
+                self.error = Some("Invalid start number 1 (input must be integer)".to_string());
                 return;
             }
         };
@@ -123,7 +120,7 @@ impl AppState {
         let start2 = match BigInt::from_str(&self.start2) {
             Ok(n) => n,
             Err(_) => {
-                self.error = Some("Invalid start number 2".to_string());
+                self.error = Some("Invalid start number 2 (input must be integer)".to_string());
                 return;
             }
         };
@@ -131,7 +128,7 @@ impl AppState {
         let range_start = match self.range_start.parse::<usize>() {
             Ok(n) => n,
             Err(_) => {
-                self.error = Some("Invalid range start".to_string());
+                self.error = Some("Invalid range start (input must be unsigned integer)".to_string());
                 return;
             }
         };
@@ -139,7 +136,7 @@ impl AppState {
         let range_end = match self.range_end.parse::<usize>() {
             Ok(n) => n,
             Err(_) => {
-                self.error = Some("Invalid range end".to_string());
+                self.error = Some("Invalid range end (input must be unsigned integer)".to_string());
                 return;
             }
         };
@@ -149,8 +146,11 @@ impl AppState {
             return;
         }
 
-        self.results =
-            domain::calculate_fibonacci((start1, start2), range_start..range_end, &self.filters);
+        self.results = domain::calculate_fibonacci(
+            (start1, start2),
+            range_start..range_end,
+            &self.filters
+        );
         self.list_state.select(Some(0));
     }
 }

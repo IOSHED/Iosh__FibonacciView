@@ -1,5 +1,6 @@
-use super::state::AppState;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use crate::app::AppState;
+use crate::app::state::InputMode;
 
 pub fn handle_events(state: &mut AppState) -> std::io::Result<bool> {
     match event::read()? {
@@ -10,13 +11,28 @@ pub fn handle_events(state: &mut AppState) -> std::io::Result<bool> {
 
 fn handle_keys(key: KeyEvent, state: &mut AppState) -> std::io::Result<bool> {
     match state.input_mode {
-        super::InputMode::Normal => match key.code {
+        InputMode::Normal => match key.code {
             KeyCode::Char('q') => return Ok(true),
-            KeyCode::Char('1') => state.input_mode = super::InputMode::Start1,
-            KeyCode::Char('2') => state.input_mode = super::InputMode::Start2,
-            KeyCode::Char('s') => state.input_mode = super::InputMode::RangeStart,
-            KeyCode::Char('e') => state.input_mode = super::InputMode::RangeEnd,
-            KeyCode::Char('v') => state.input_mode = super::InputMode::FilterValue,
+            KeyCode::Char('1') => {
+                state.input_mode = InputMode::Start1;
+                state.start1.clear();
+            }
+            KeyCode::Char('2') => {
+                state.input_mode = InputMode::Start2;
+                state.start2.clear();
+            }
+            KeyCode::Char('s') => {
+                state.input_mode = InputMode::RangeStart;
+                state.range_start.clear();
+            }
+            KeyCode::Char('e') => {
+                state.input_mode = InputMode::RangeEnd;
+                state.range_end.clear();
+            }
+            KeyCode::Char('v') => {
+                state.input_mode = InputMode::FilterValue;
+                state.filter_value.clear();
+            }
             KeyCode::Char('a') => state.add_filter(),
             KeyCode::Char('r') => state.calculate(),
             KeyCode::Char('c') => state.filters.clear(),
@@ -26,10 +42,10 @@ fn handle_keys(key: KeyEvent, state: &mut AppState) -> std::io::Result<bool> {
             _ => {}
         },
         _ => match key.code {
-            KeyCode::Enter => state.input_mode = super::InputMode::Normal,
+            KeyCode::Enter => state.input_mode = InputMode::Normal,
             KeyCode::Char(c) => handle_char_input(c, state),
             KeyCode::Backspace => handle_backspace(state),
-            KeyCode::Esc => state.input_mode = super::InputMode::Normal,
+            KeyCode::Esc => state.input_mode = InputMode::Normal,
             _ => {}
         },
     }
@@ -38,30 +54,30 @@ fn handle_keys(key: KeyEvent, state: &mut AppState) -> std::io::Result<bool> {
 
 fn handle_char_input(c: char, state: &mut AppState) {
     match state.input_mode {
-        super::InputMode::Start1 => state.start1.push(c),
-        super::InputMode::Start2 => state.start2.push(c),
-        super::InputMode::RangeStart => state.range_start.push(c),
-        super::InputMode::RangeEnd => state.range_end.push(c),
-        super::InputMode::FilterValue => state.filter_value.push(c),
+        InputMode::Start1 => state.start1.push(c),
+        InputMode::Start2 => state.start2.push(c),
+        InputMode::RangeStart => state.range_start.push(c),
+        InputMode::RangeEnd => state.range_end.push(c),
+        InputMode::FilterValue => state.filter_value.push(c),
         _ => {}
     }
 }
 
 fn handle_backspace(state: &mut AppState) {
     match state.input_mode {
-        super::InputMode::Start1 => {
+        InputMode::Start1 => {
             state.start1.pop();
         }
-        super::InputMode::Start2 => {
+        InputMode::Start2 => {
             state.start2.pop();
         }
-        super::InputMode::RangeStart => {
+        InputMode::RangeStart => {
             state.range_start.pop();
         }
-        super::InputMode::RangeEnd => {
+        InputMode::RangeEnd => {
             state.range_end.pop();
         }
-        super::InputMode::FilterValue => {
+        InputMode::FilterValue => {
             state.filter_value.pop();
         }
         _ => {}
