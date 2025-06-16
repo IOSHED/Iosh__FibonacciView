@@ -99,6 +99,12 @@ impl<'a> ResultRenderer<'a> {
         } else {
             num.to_string()
         };
+        let formatted = if index == self.state.output.list_state.selected().unwrap_or(0) {
+            format!("[{}]", formatted).bold().yellow().to_string()
+        } else {
+            formatted
+        };
+
 
         let style = if index % 2 == 0 {
             Style::new().white()
