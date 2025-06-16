@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 fibo_calc = { path = "../fibo_calc" }
+
 # Calculation
 num-bigint = "0.4.6"
 kalkulator = "0.2.2"
@@ -12,3 +13,6 @@ kalkulator = "0.2.2"
 # Terminal
 ratatui = "0.29.0"
 crossterm = "0.29.0"
+
+[build-dependencies]
+winres = "0.1.12"
