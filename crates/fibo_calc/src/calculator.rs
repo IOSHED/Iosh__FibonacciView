@@ -17,31 +17,25 @@ impl FiboCalc {
             return vec![];
         }
 
-        let implementation_fibo = LinealFibo::new(self.builder.get_start_nums());
-
-        let Range { start, end } = self.builder.get_range_by_id().unwrap();
-
-        let mut result_fibo: Vec<BigInt> = if end >= 2 {
-            implementation_fibo.take(end - 2).collect()
-        } else {
-            vec![]
+        let (start_nums, Range { start, end }) = match (self.builder.get_start_nums(), self.builder.get_range_by_id()) {
+            (Some((n1, n2)), Some(range)) => ((n1, n2), range),
+            _ => return vec![]
         };
 
+        let mut result = Vec::with_capacity(if end > start { end - start } else { 0 });
+
+        if start == 0 { result.push(start_nums.0.clone()); }
+        if start <= 1 && end > 1 { result.push(start_nums.1.clone()); }
+
+        if end > 2 {
+            let implementation_fibo = LinealFibo::new(Some(start_nums));
+            result.extend(implementation_fibo.take(end - 2));
+        }
+
         let filters = self.builder.get_filters();
-        self.merge_result_fibo_and_start_nums(&mut result_fibo)
-            .into_iter()
+        result.into_iter()
             .skip(start)
             .filter(|n| filters.iter().all(|func| func(n)))
             .collect()
-    }
-
-    fn merge_result_fibo_and_start_nums(&self, result_fibo: &mut Vec<BigInt>) -> Vec<BigInt> {
-        let mut start_nums_vec = vec![];
-        if let Some((start_num1, start_num2)) = self.builder.get_start_nums() {
-            start_nums_vec.append(&mut vec![start_num1, start_num2])
-        }
-
-        start_nums_vec.append(result_fibo);
-        start_nums_vec
     }
 }

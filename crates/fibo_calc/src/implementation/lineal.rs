@@ -30,7 +30,7 @@ impl Iterator for LinealFibo {
     type Item = BigInt;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let res = self.last.clone() + self.pre_last.clone();
+        let res = &self.last + &self.pre_last;
         self.pre_last = self.last.clone();
         self.last = res.clone();
         Some(res)
