@@ -6,7 +6,7 @@ use num_bigint::BigInt;
 use ratatui::prelude::Stylize;
 use crate::app::AppState;
 
-pub struct ListStyles {
+struct ListStyles {
     empty_text: Style,
     tips_header: Style,
     tip_item: Style,
@@ -30,7 +30,7 @@ impl Default for ListStyles {
     }
 }
 
-pub struct ResultRenderer<'a> {
+struct ResultRenderer<'a> {
     state: &'a AppState,
     styles: ListStyles,
 }

@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Paragraph, Wrap},
 };
 
-struct PanelStyles {
+struct ListStyles {
     active_input: Style,
     inactive_start: Style,
     inactive_range: Style,
@@ -21,7 +21,7 @@ struct PanelStyles {
     error_text: Style,
 }
 
-impl Default for PanelStyles {
+impl Default for ListStyles {
     fn default() -> Self {
         Self {
             active_input: Style::new().bold().yellow(),
@@ -41,101 +41,120 @@ impl Default for PanelStyles {
     }
 }
 
-pub fn render(state: &AppState) -> Paragraph {
-    let styles = PanelStyles::default();
-    let mut lines = Vec::new();
-
-    append_input_fields(&mut lines, state, &styles);
-    append_filter_section(&mut lines, state, &styles);
-    append_action_section(&mut lines, &styles);
-    append_navigation_section(&mut lines, &styles);
-
-    let mut text = Text::from(lines);
-    append_error_section(&mut text, state, &styles);
-
-    Paragraph::new(text).wrap(Wrap { trim: true })
+struct ResultRenderer<'a> {
+    state: &'a AppState,
+    styles: ListStyles,
 }
 
-fn get_field_style(current_mode: &InputMode, target_mode: InputMode, styles: &PanelStyles) -> Style {
-    if *current_mode == target_mode {
-        styles.active_input
-    } else {
-        match target_mode {
-            InputMode::Start1 | InputMode::Start2 => styles.inactive_start,
-            InputMode::RangeStart | InputMode::RangeEnd => styles.inactive_range,
-            InputMode::FilterValue => styles.inactive_filter,
-            _ => Style::default(),
+impl<'a> ResultRenderer<'a> {
+    pub fn new(state: &'a AppState) -> Self {
+        Self {
+            state,
+            styles: ListStyles::default(),
         }
     }
-}
 
-fn append_input_fields(lines: &mut Vec<Line>, state: &AppState, styles: &PanelStyles) {
-    lines.extend([
-        Line::from(""),
-        Line::from(format!("🔢 Start Number 1 [1]: {}", state.input.start1))
-            .style(get_field_style(&state.input_mode, InputMode::Start1, styles)),
-        Line::from(format!("🔢 Start Number 2 [2]: {}", state.input.start2))
-            .style(get_field_style(&state.input_mode, InputMode::Start2, styles)),
-        Line::from(""),
-        Line::from(format!("📍 Range Start [s]: {}", state.input.range_start))
-            .style(get_field_style(&state.input_mode, InputMode::RangeStart, styles)),
-        Line::from(format!("📍 Range End [e]: {}", state.input.range_end))
-            .style(get_field_style(&state.input_mode, InputMode::RangeEnd, styles)),
-        Line::from(""),
-        Line::from(format!(
-            "🔍 Filter Value [v]: {}{}",
-            state.filters.filter_type, state.input.filter_value
-        ))
-        .style(get_field_style(&state.input_mode, InputMode::FilterValue, styles)),
-        Line::from(""),
-        Line::from("🔍 Active Filters:").style(styles.filter_header),
-    ]);
-}
+    pub fn render(self) -> Paragraph<'a> {
+        let mut lines = Vec::new();
 
-fn append_filter_section(lines: &mut Vec<Line>, state: &AppState, styles: &PanelStyles) {
-    if state.filters.filters.is_empty() {
-        lines.push(Line::from("   (No filters applied)").style(styles.no_filter));
-    } else {
-        for (i, filter) in state.filters.filters.iter().enumerate() {
-            lines.push(
-                Line::from(format!(
-                    "   {}. {} {}",
-                    i + 1,
-                    filter.filter_type,
-                    filter.value
-                ))
-                .style(styles.filter_item),
-            );
+        self.append_input_fields(&mut lines);
+        self.append_filter_section(&mut lines);
+        self.append_action_section(&mut lines);
+        self.append_navigation_section(&mut lines);
+
+        let mut text = Text::from(lines);
+        self.append_error_section(&mut text);
+
+        Paragraph::new(text).wrap(Wrap { trim: true })
+    }
+
+
+    fn get_field_style(&self, current_mode: &InputMode, target_mode: InputMode) -> Style {
+        if *current_mode == target_mode {
+            self.styles.active_input
+        } else {
+            match target_mode {
+                InputMode::Start1 | InputMode::Start2 => self.styles.inactive_start,
+                InputMode::RangeStart | InputMode::RangeEnd => self.styles.inactive_range,
+                InputMode::FilterValue => self.styles.inactive_filter,
+                _ => Style::default(),
+            }
         }
     }
-}
 
-fn append_action_section(lines: &mut Vec<Line>, styles: &PanelStyles) {
-    lines.extend([
-        Line::from(""),
-        Line::from("⚡ Actions:").style(styles.action_header),
-        Line::from("   [a] Add filter    [d] Delete filter").style(styles.action_item),
-        Line::from("   [g] Filter ≥      [l] Filter ≤").style(styles.action_item),
-        Line::from("   [r] Calculate     [c] Clear filters").style(styles.action_item),
-    ]);
-}
-
-fn append_navigation_section(lines: &mut Vec<Line>, styles: &PanelStyles) {
-    lines.extend([
-        Line::from(""),
-        Line::from("🎮 Navigation:").style(styles.nav_header),
-        Line::from("   1,2,s,e,v Edit fields").style(styles.nav_item),
-        Line::from("   ESC/Enter Exit edit mode").style(styles.nav_item),
-        Line::from("   ↑↓ Navigate results").style(styles.nav_item),
-    ]);
-}
-
-fn append_error_section(text: &mut Text, state: &AppState, styles: &PanelStyles) {
-    if let Some(err) = &state.error {
-        text.lines.extend([
+    fn append_input_fields(&self, lines: &mut Vec<Line>) {
+        lines.extend([
             Line::from(""),
-            Line::from("❌ Error:").style(styles.error_header),
-            Line::from(format!("   {}", err)).style(styles.error_text),
+            Line::from(format!("🔢 Start Number 1 [1]: {}", self.state.input.start1))
+                .style(self.get_field_style(&self.state.input_mode, InputMode::Start1)),
+            Line::from(format!("🔢 Start Number 2 [2]: {}", self.state.input.start2))
+                .style(self.get_field_style(&self.state.input_mode, InputMode::Start2)),
+            Line::from(""),
+            Line::from(format!("📍 Range Start [s]: {}", self.state.input.range_start))
+                .style(self.get_field_style(&self.state.input_mode, InputMode::RangeStart)),
+            Line::from(format!("📍 Range End [e]: {}", self.state.input.range_end))
+                .style(self.get_field_style(&self.state.input_mode, InputMode::RangeEnd)),
+            Line::from(""),
+            Line::from(format!(
+                "🔍 Filter Value [v]: {}{}",
+                self.state.filters.filter_type, self.state.input.filter_value
+            ))
+                .style(self.get_field_style(&self.state.input_mode, InputMode::FilterValue)),
+            Line::from(""),
+            Line::from("🔍 Active Filters:").style(self.styles.filter_header),
         ]);
     }
+
+    fn append_filter_section(&self, lines: &mut Vec<Line>) {
+        if self.state.filters.filters.is_empty() {
+            lines.push(Line::from("   (No filters applied)").style(self.styles.no_filter));
+        } else {
+            for (i, filter) in self.state.filters.filters.iter().enumerate() {
+                lines.push(
+                    Line::from(format!(
+                        "   {}. {} {}",
+                        i + 1,
+                        filter.filter_type,
+                        filter.value
+                    ))
+                        .style(self.styles.filter_item),
+                );
+            }
+        }
+    }
+
+    fn append_action_section(&self, lines: &mut Vec<Line>) {
+        lines.extend([
+            Line::from(""),
+            Line::from("⚡ Actions:").style(self.styles.action_header),
+            Line::from("   [a] Add filter    [d] Delete filter").style(self.styles.action_item),
+            Line::from("   [g] Filter ≥      [l] Filter ≤").style(self.styles.action_item),
+            Line::from("   [r] Calculate     [c] Clear filters").style(self.styles.action_item),
+        ]);
+    }
+
+    fn append_navigation_section(&self, lines: &mut Vec<Line>) {
+        lines.extend([
+            Line::from(""),
+            Line::from("🎮 Navigation:").style(self.styles.nav_header),
+            Line::from("   1,2,s,e,v Edit fields").style(self.styles.nav_item),
+            Line::from("   ESC/Enter Exit edit mode").style(self.styles.nav_item),
+            Line::from("   ↑↓ Navigate results").style(self.styles.nav_item),
+        ]);
+    }
+
+    fn append_error_section(&self, text: &mut Text) {
+        if let Some(err) = &self.state.error {
+            text.lines.extend([
+                Line::from(""),
+                Line::from("❌ Error:").style(self.styles.error_header),
+                Line::from(format!("   {}", err)).style(self.styles.error_text),
+            ]);
+        }
+    }
 }
+
+pub fn render(state: &AppState) -> Paragraph {
+    ResultRenderer::new(state).render()
+}
+
