@@ -85,10 +85,7 @@ impl EventHandler {
                 Ok(false)
             }
             'r' => {
-                self.state
-                    .calculate()
-                    .await
-                    .map_err(|e| Error::new(std::io::ErrorKind::Other, e))?;
+                self.state.calculate().await;
                 Ok(false)
             }
             'c' => {

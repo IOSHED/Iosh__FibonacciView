@@ -47,6 +47,14 @@ impl Display for FilterType {
     }
 }
 
+struct CalculationParams {
+    start1: BigInt,
+    start2: BigInt,
+    range_start: usize,
+    range_end: usize,
+}
+
+
 #[derive(Default)]
 pub struct InputFields {
     pub start1: String,
@@ -107,8 +115,7 @@ impl AppState {
     }
 
     pub async fn add_filter(&mut self) -> Result<(), String> {
-        let value = domain::calculate_expr(&self.input.filter_value)
-            .await?;
+        let value = domain::calculate_expr(&self.input.filter_value).await?;
 
         self.filters.filters.push(Filter {
             filter_type: self.filters.filter_type.clone(),
@@ -131,15 +138,16 @@ impl AppState {
         }
 
         let selected = self.output.list_state.selected().unwrap_or(0);
-        let new_index = calculate_new_index(selected, direction, self.output.results.len()).await;
+        let new_index =
+            Self::calculate_new_index(selected, direction, self.output.results.len()).await;
         self.output.list_state.select(Some(new_index));
     }
 
-    pub async fn calculate(&mut self) -> Result<(), String> {
+    pub async fn calculate(&mut self) {
         self.count_use += 1;
 
-        let calculation_params = self.parse_calculation_parameters().await?;
-        self.validate_range(&calculation_params).await?;
+        let calculation_params = self.parse_calculation_parameters().await;
+        self.validate_range(&calculation_params).await;
 
         self.output.results = domain::calculate_fibonacci(
             (calculation_params.start1, calculation_params.start2),
@@ -149,49 +157,48 @@ impl AppState {
         .await;
 
         self.output.list_state.select(Some(0));
-        Ok(())
     }
 
-    async fn parse_calculation_parameters(&self) -> Result<CalculationParams, String> {
-        Ok(CalculationParams {
-            start1: parse_big_int(&self.input.start1).await?,
-            start2: parse_big_int(&self.input.start2).await?,
-            range_start: parse_usize(&self.input.range_start).await?,
-            range_end: parse_usize(&self.input.range_end).await?,
-        })
-    }
-
-    async fn validate_range(&self, params: &CalculationParams) -> Result<(), String> {
-        if params.range_end <= params.range_start {
-            return Err("Range end must be > start".to_string());
+    async fn parse_calculation_parameters(&mut self) -> CalculationParams {
+        CalculationParams {
+            start1: self.parse_big_int(&self.input.start1.clone()).await,
+            start2: self.parse_big_int(&self.input.start2.clone()).await,
+            range_start: self.parse_usize(&self.input.range_start.clone()).await,
+            range_end: self.parse_usize(&self.input.range_end.clone()).await,
         }
-        Ok(())
     }
-}
 
-struct CalculationParams {
-    start1: BigInt,
-    start2: BigInt,
-    range_start: usize,
-    range_end: usize,
-}
-
-async fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
-    match direction {
-        1 => (current + 1) % total,
-        -1 => (current + total - 1) % total,
-        _ => current,
+    async fn validate_range(&mut self, params: &CalculationParams) {
+        if params.range_end <= params.range_start {
+            self.error = Some("Range end must be > start".to_string());
+        }
     }
-}
 
-async fn parse_big_int(input: &str) -> Result<BigInt, String> {
-    domain::calculate_expr(input)
-        .await
-        .map(BigInt::from)
-}
+    async fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
+        match direction {
+            1 => (current + 1) % total,
+            -1 => (current + total - 1) % total,
+            _ => current,
+        }
+    }
 
-async fn parse_usize(input: &str) -> Result<usize, String> {
-    domain::calculate_expr(input)
-        .await
-        .map(|n| n as usize)
+    async fn parse_big_int(&mut self, input: &str) -> BigInt {
+        domain::calculate_expr(input)
+            .await
+            .map(BigInt::from)
+            .unwrap_or_else(|e| {
+                self.error = Some(e);
+                BigInt::from(0)
+            })
+    }
+
+    async fn parse_usize(&mut self, input: &str) -> usize {
+        domain::calculate_expr(input)
+            .await
+            .map(|n| n as usize)
+            .unwrap_or_else(|e| {
+                self.error = Some(e);
+                0
+            })
+    }
 }
