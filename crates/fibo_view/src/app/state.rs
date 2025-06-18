@@ -108,8 +108,7 @@ impl AppState {
 
     pub async fn add_filter(&mut self) -> Result<(), String> {
         let value = domain::calculate_expr(&self.input.filter_value)
-            .await
-            .map_err(|e| e)?;
+            .await?;
 
         self.filters.filters.push(Filter {
             filter_type: self.filters.filter_type.clone(),
@@ -189,12 +188,10 @@ async fn parse_big_int(input: &str) -> Result<BigInt, String> {
     domain::calculate_expr(input)
         .await
         .map(BigInt::from)
-        .map_err(|e| e)
 }
 
 async fn parse_usize(input: &str) -> Result<usize, String> {
     domain::calculate_expr(input)
         .await
         .map(|n| n as usize)
-        .map_err(|e| e)
 }

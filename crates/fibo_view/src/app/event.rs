@@ -148,7 +148,7 @@ impl EventHandler {
 }
 
 pub async fn handle_events(state: &mut AppState) -> Result<bool> {
-    let mut handler = EventHandler::new(std::mem::replace(state, AppState::default()));
+    let mut handler = EventHandler::new(std::mem::take(state));
     let result = handler.handle_events().await;
     *state = handler.state;
     result

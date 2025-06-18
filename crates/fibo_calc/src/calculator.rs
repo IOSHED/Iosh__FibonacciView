@@ -25,7 +25,7 @@ impl FiboCalc {
             _ => return vec![],
         };
 
-        let mut result = Vec::with_capacity(if end > start { end - start } else { 0 });
+        let mut result = Vec::with_capacity(end.saturating_sub(start));
 
         if start == 0 {
             result.push(start_nums.0.clone());
