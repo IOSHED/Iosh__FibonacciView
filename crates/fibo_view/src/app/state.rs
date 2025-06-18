@@ -1,4 +1,5 @@
 use crate::domain;
+use fibo_calc::{FiboTaskReceiver, FiboTaskResult};
 use num_bigint::BigInt;
 use ratatui::widgets::ListState;
 use std::fmt::Display;
@@ -73,7 +74,9 @@ pub struct FilterState {
 #[derive(Default)]
 pub struct OutputState {
     pub results: Vec<BigInt>,
+    pub progress: Option<u8>,
     pub list_state: ListState,
+    receiver: Option<FiboTaskReceiver>,
 }
 
 pub struct AppState {
@@ -143,20 +146,38 @@ impl AppState {
         self.output.list_state.select(Some(new_index));
     }
 
+    pub async fn update_progress_bar(&mut self) {
+        if let Some(rec) = self.output.receiver.as_mut() {
+            if let Some(progress) = rec.recv().await {
+                match progress {
+                    FiboTaskResult::Calculation(p) => {
+                        self.output.results = vec![];
+                        self.output.progress = Some(p)
+                    }
+                    FiboTaskResult::Result(res) => {
+                        self.output.results = res;
+                        self.output.list_state.select(Some(0));
+                        self.output.progress = None;
+                    }
+                }
+            }
+        }
+    }
+
     pub async fn calculate(&mut self) {
         self.count_use += 1;
 
         let calculation_params = self.parse_calculation_parameters().await;
         self.validate_range(&calculation_params).await;
 
-        self.output.results = domain::calculate_fibonacci(
-            (calculation_params.start1, calculation_params.start2),
-            calculation_params.range_start..calculation_params.range_end,
-            &self.filters.filters,
-        )
-        .await;
-
-        self.output.list_state.select(Some(0));
+        self.output.receiver = Some(
+            domain::calculate_fibonacci(
+                (calculation_params.start1, calculation_params.start2),
+                calculation_params.range_start..calculation_params.range_end,
+                &self.filters.filters,
+            )
+            .await,
+        );
     }
 
     async fn parse_calculation_parameters(&mut self) -> CalculationParams {

@@ -1,10 +1,10 @@
 use crate::app::{Filter, FilterType};
-use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskResult};
+use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskReceiver};
 use num_bigint::BigInt;
 
 pub async fn calculate_fibonacci(
     start_nums: (BigInt, BigInt), range: std::ops::Range<usize>, filters: &[Filter],
-) -> Vec<BigInt> {
+) -> FiboTaskReceiver {
     let mut builder = FiboBuilder::default();
 
     builder
@@ -20,13 +20,7 @@ pub async fn calculate_fibonacci(
     }
 
     let calc = FiboCalc::new(builder);
-    let mut receiver = calc.calc_background();
+    let receiver = calc.calc_background();
 
-    while let Some(result) = receiver.recv().await {
-        if let FiboTaskResult::Result(res) = result {
-            return res;
-        }
-    }
-
-    vec![]
+    receiver
 }

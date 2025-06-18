@@ -7,4 +7,4 @@ mod task;
 
 pub use builder::FiboBuilder;
 pub use calculator::FiboCalc;
-pub use task::FiboTaskResult;
+pub use task::{FiboTaskReceiver, FiboTaskResult};

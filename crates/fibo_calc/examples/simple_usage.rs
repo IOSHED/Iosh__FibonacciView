@@ -1,5 +1,5 @@
-use num_bigint::BigInt;
 use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskResult};
+use num_bigint::BigInt;
 
 #[tokio::main]
 async fn main() {

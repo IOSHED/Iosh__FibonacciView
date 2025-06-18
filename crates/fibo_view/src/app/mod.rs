@@ -6,6 +6,9 @@ pub use self::state::{AppState, Filter, FilterType, InputMode};
 use crate::ui;
 use ratatui::DefaultTerminal;
 use std::io;
+use std::time::Duration;
+use tokio;
+use tokio::time::interval;
 
 pub struct TerminalApp {
     terminal: DefaultTerminal,
@@ -21,15 +24,23 @@ impl TerminalApp {
     }
 
     pub async fn run(&mut self) -> io::Result<()> {
-        loop {
-            self.terminal
-                .draw(|f| ui::draw(f, &mut self.state))
-                .expect("failed to draw frame");
+        let mut tick_interval = interval(Duration::from_millis(100));
 
-            if handle_events(&mut self.state).await? {
-                break Ok(());
+        loop {
+            tokio::select! {
+                _ = tick_interval.tick() => {
+                    self.state.update_progress_bar().await;
+                    self.terminal.draw(|f| ui::draw(f, &mut self.state))?;
+                }
+                exit = handle_events(&mut self.state) => {
+                    if exit? {
+                        break;
+                    }
+                    self.terminal.draw(|f| ui::draw(f, &mut self.state))?;
+                }
             }
         }
+        Ok(())
     }
 
     pub fn restore(self) {
