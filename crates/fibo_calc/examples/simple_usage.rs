@@ -1,6 +1,5 @@
 use num_bigint::BigInt;
 use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskResult};
-use tokio;
 
 #[tokio::main]
 async fn main() {
@@ -12,10 +11,10 @@ async fn main() {
             num_bigint::BigInt::from(0),
             num_bigint::BigInt::from(1),
         )))
-        .set_range_by_id(Some(1..100))
-        .add_filter(|num| num % BigInt::from(2)  == BigInt::from(0));
+        .set_range_by_id(Some(100..150))
+        .add_filter(|num| num % BigInt::from(2) == BigInt::from(0));
 
-    println!("Начинаем расчет чисел Фибоначчи (1..100, только четные)...");
+    println!("Начинаем расчет чисел Фибоначчи (100..150, только четные)...");
     println!("Задача запущена в фоновом режиме.\n");
 
     let calc = FiboCalc::new(builder);
@@ -28,11 +27,11 @@ async fn main() {
             }
             FiboTaskResult::Result(numbers) => {
                 println!("\n✅ Расчет завершен!");
-                println!("Найдено {} четных чисел Фибоначчи:", numbers.len());
+                println!("Найдено {}... четных чисел Фибоначчи:", numbers.len());
 
                 let display_count = numbers.len().min(10);
                 for (i, num) in numbers.iter().take(display_count).enumerate() {
-                    println!("  {}: {}", i + 1, num);
+                    println!("  {}: {}", i + 1, &num.to_string()[..15]);
                 }
 
                 if numbers.len() > 10 {
