@@ -20,13 +20,13 @@ impl TerminalApp {
         }
     }
 
-    pub fn run(&mut self) -> io::Result<()> {
+    pub async fn run(&mut self) -> io::Result<()> {
         loop {
             self.terminal
                 .draw(|f| ui::draw(f, &mut self.state))
                 .expect("failed to draw frame");
 
-            if handle_events(&mut self.state)? {
+            if handle_events(&mut self.state).await? {
                 break Ok(());
             }
         }

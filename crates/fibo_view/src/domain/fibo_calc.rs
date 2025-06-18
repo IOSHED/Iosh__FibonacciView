@@ -2,7 +2,7 @@ use crate::app::{Filter, FilterType};
 use fibo_calc::{FiboBuilder, FiboCalc};
 use num_bigint::BigInt;
 
-pub fn calculate_fibonacci(
+pub async fn calculate_fibonacci(
     start_nums: (BigInt, BigInt), range: std::ops::Range<usize>, filters: &[Filter],
 ) -> Vec<BigInt> {
     let mut builder = FiboBuilder::default();
@@ -20,5 +20,5 @@ pub fn calculate_fibonacci(
     }
 
     let fibo_calc = FiboCalc::new(builder);
-    fibo_calc.calc()
+    fibo_calc.calc().await
 }

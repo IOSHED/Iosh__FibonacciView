@@ -1,10 +1,10 @@
+use crate::app::AppState;
+use num_bigint::BigInt;
+use ratatui::prelude::Stylize;
 use ratatui::{
     style::Style,
     widgets::{Block, List, ListItem},
 };
-use num_bigint::BigInt;
-use ratatui::prelude::Stylize;
-use crate::app::AppState;
 
 struct ListStyles {
     empty_text: Style,

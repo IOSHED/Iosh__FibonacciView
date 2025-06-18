@@ -106,8 +106,9 @@ impl AppState {
         state
     }
 
-    pub fn add_filter(&mut self) -> Result<(), String> {
+    pub async fn add_filter(&mut self) -> Result<(), String> {
         let value = domain::calculate_expr(&self.input.filter_value)
+            .await
             .map_err(|e| e)?;
 
         self.filters.filters.push(Filter {
@@ -125,42 +126,43 @@ impl AppState {
         self.filters.filters.clear();
     }
 
-    pub fn scroll_results(&mut self, direction: i32) {
+    pub async fn scroll_results(&mut self, direction: i32) {
         if self.output.results.is_empty() {
             return;
         }
 
         let selected = self.output.list_state.selected().unwrap_or(0);
-        let new_index = calculate_new_index(selected, direction, self.output.results.len());
+        let new_index = calculate_new_index(selected, direction, self.output.results.len()).await;
         self.output.list_state.select(Some(new_index));
     }
 
-    pub fn calculate(&mut self) -> Result<(), String> {
+    pub async fn calculate(&mut self) -> Result<(), String> {
         self.count_use += 1;
 
-        let calculation_params = self.parse_calculation_parameters()?;
-        self.validate_range(&calculation_params)?;
+        let calculation_params = self.parse_calculation_parameters().await?;
+        self.validate_range(&calculation_params).await?;
 
         self.output.results = domain::calculate_fibonacci(
             (calculation_params.start1, calculation_params.start2),
             calculation_params.range_start..calculation_params.range_end,
             &self.filters.filters,
-        );
+        )
+        .await;
 
         self.output.list_state.select(Some(0));
         Ok(())
     }
 
-    fn parse_calculation_parameters(&self) -> Result<CalculationParams, String> {
+    async fn parse_calculation_parameters(&self) -> Result<CalculationParams, String> {
         Ok(CalculationParams {
-            start1: parse_big_int(&self.input.start1)?,
-            start2: parse_big_int(&self.input.start2)?,
-            range_start: parse_usize(&self.input.range_start)?,
-            range_end: parse_usize(&self.input.range_end)?,
+            start1: parse_big_int(&self.input.start1).await?,
+            start2: parse_big_int(&self.input.start2).await?,
+            range_start: parse_usize(&self.input.range_start).await?,
+            range_end: parse_usize(&self.input.range_end).await?,
         })
     }
 
-    fn validate_range(&self, params: &CalculationParams) -> Result<(), String> {
+    async fn validate_range(&self, params: &CalculationParams) -> Result<(), String> {
         if params.range_end <= params.range_start {
             return Err("Range end must be > start".to_string());
         }
@@ -175,7 +177,7 @@ struct CalculationParams {
     range_end: usize,
 }
 
-fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
+async fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
     match direction {
         1 => (current + 1) % total,
         -1 => (current + total - 1) % total,
@@ -183,14 +185,16 @@ fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
     }
 }
 
-fn parse_big_int(input: &str) -> Result<BigInt, String> {
+async fn parse_big_int(input: &str) -> Result<BigInt, String> {
     domain::calculate_expr(input)
+        .await
         .map(BigInt::from)
         .map_err(|e| e)
 }
 
-fn parse_usize(input: &str) -> Result<usize, String> {
+async fn parse_usize(input: &str) -> Result<usize, String> {
     domain::calculate_expr(input)
+        .await
         .map(|n| n as usize)
         .map_err(|e| e)
 }

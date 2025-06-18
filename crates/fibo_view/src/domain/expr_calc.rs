@@ -1,6 +1,6 @@
 use kalkulator::Expression;
 
-pub fn calculate_expr(expr: &str) -> Result<u128, String> {
+pub async fn calculate_expr(expr: &str) -> Result<u128, String> {
     let mut expr = Expression::new(expr);
 
     expr.infix_to_postfix().map_err(|e| e.to_string())?;

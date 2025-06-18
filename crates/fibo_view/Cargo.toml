@@ -14,5 +14,8 @@ kalkulator = "0.2.2"
 ratatui = "0.29.0"
 crossterm = "0.29.0"
 
+# Async
+tokio = { version = "1.45.1", features = ["rt", "rt-multi-thread", "macros"] }
+
 [build-dependencies]
 winres = "0.1.12"

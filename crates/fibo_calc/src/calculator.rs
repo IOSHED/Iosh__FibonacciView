@@ -12,20 +12,27 @@ impl FiboCalc {
         Self { builder }
     }
 
-    pub fn calc(self) -> Vec<BigInt> {
+    pub async fn calc(self) -> Vec<BigInt> {
         if self.builder.is_none_filter() {
             return vec![];
         }
 
-        let (start_nums, Range { start, end }) = match (self.builder.get_start_nums(), self.builder.get_range_by_id()) {
+        let (start_nums, Range { start, end }) = match (
+            self.builder.get_start_nums(),
+            self.builder.get_range_by_id(),
+        ) {
             (Some((n1, n2)), Some(range)) => ((n1, n2), range),
-            _ => return vec![]
+            _ => return vec![],
         };
 
         let mut result = Vec::with_capacity(if end > start { end - start } else { 0 });
 
-        if start == 0 { result.push(start_nums.0.clone()); }
-        if start <= 1 && end > 1 { result.push(start_nums.1.clone()); }
+        if start == 0 {
+            result.push(start_nums.0.clone());
+        }
+        if start <= 1 && end > 1 {
+            result.push(start_nums.1.clone());
+        }
 
         if end > 2 {
             let implementation_fibo = LinealFibo::new(Some(start_nums));
@@ -33,7 +40,8 @@ impl FiboCalc {
         }
 
         let filters = self.builder.get_filters();
-        result.into_iter()
+        result
+            .into_iter()
             .skip(start)
             .filter(|n| filters.iter().all(|func| func(n)))
             .collect()

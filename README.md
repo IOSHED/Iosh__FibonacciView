@@ -14,7 +14,9 @@ Screen3 (Has filters):
 
 # Task
 
-1) Scroll nums
-2) Matrix math Fibo Nums
-3) CI CD for realize
-4) Add complex filters
+1) Async calculation
+2) Scroll nums
+3) Matrix math Fibo Nums
+4) CI CD for realize
+5) Add complex filters
+6) Smart cache

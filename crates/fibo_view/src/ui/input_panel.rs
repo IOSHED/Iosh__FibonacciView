@@ -68,7 +68,6 @@ impl<'a> ResultRenderer<'a> {
         Paragraph::new(text).wrap(Wrap { trim: true })
     }
 
-
     fn get_field_style(&self, current_mode: &InputMode, target_mode: InputMode) -> Style {
         if *current_mode == target_mode {
             self.styles.active_input
@@ -85,13 +84,22 @@ impl<'a> ResultRenderer<'a> {
     fn append_input_fields(&self, lines: &mut Vec<Line>) {
         lines.extend([
             Line::from(""),
-            Line::from(format!("🔢 Start Number 1 [1]: {}", self.state.input.start1))
-                .style(self.get_field_style(&self.state.input_mode, InputMode::Start1)),
-            Line::from(format!("🔢 Start Number 2 [2]: {}", self.state.input.start2))
-                .style(self.get_field_style(&self.state.input_mode, InputMode::Start2)),
+            Line::from(format!(
+                "🔢 Start Number 1 [1]: {}",
+                self.state.input.start1
+            ))
+            .style(self.get_field_style(&self.state.input_mode, InputMode::Start1)),
+            Line::from(format!(
+                "🔢 Start Number 2 [2]: {}",
+                self.state.input.start2
+            ))
+            .style(self.get_field_style(&self.state.input_mode, InputMode::Start2)),
             Line::from(""),
-            Line::from(format!("📍 Range Start [s]: {}", self.state.input.range_start))
-                .style(self.get_field_style(&self.state.input_mode, InputMode::RangeStart)),
+            Line::from(format!(
+                "📍 Range Start [s]: {}",
+                self.state.input.range_start
+            ))
+            .style(self.get_field_style(&self.state.input_mode, InputMode::RangeStart)),
             Line::from(format!("📍 Range End [e]: {}", self.state.input.range_end))
                 .style(self.get_field_style(&self.state.input_mode, InputMode::RangeEnd)),
             Line::from(""),
@@ -99,7 +107,7 @@ impl<'a> ResultRenderer<'a> {
                 "🔍 Filter Value [v]: {}{}",
                 self.state.filters.filter_type, self.state.input.filter_value
             ))
-                .style(self.get_field_style(&self.state.input_mode, InputMode::FilterValue)),
+            .style(self.get_field_style(&self.state.input_mode, InputMode::FilterValue)),
             Line::from(""),
             Line::from("🔍 Active Filters:").style(self.styles.filter_header),
         ]);
@@ -117,7 +125,7 @@ impl<'a> ResultRenderer<'a> {
                         filter.filter_type,
                         filter.value
                     ))
-                        .style(self.styles.filter_item),
+                    .style(self.styles.filter_item),
                 );
             }
         }
@@ -157,4 +165,3 @@ impl<'a> ResultRenderer<'a> {
 pub fn render(state: &AppState) -> Paragraph {
     ResultRenderer::new(state).render()
 }
-

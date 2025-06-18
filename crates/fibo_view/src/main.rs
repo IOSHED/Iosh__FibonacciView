@@ -4,10 +4,11 @@ mod app;
 mod domain;
 mod ui;
 
-fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
     let mut terminal = TerminalApp::new();
 
-    terminal.run()?;
+    terminal.run().await?;
 
     terminal.restore();
 

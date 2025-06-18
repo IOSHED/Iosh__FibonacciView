@@ -69,9 +69,7 @@ fn create_layout(area: Rect) -> LayoutAreas {
 }
 
 fn create_bordered_block(style: Style) -> Block<'static> {
-    Block::bordered()
-        .title_style(style)
-        .border_style(style)
+    Block::bordered().title_style(style).border_style(style)
 }
 
 fn render_title_section(frame: &mut Frame, areas: &LayoutAreas, styles: &UiStyles) {
@@ -88,13 +86,12 @@ fn render_title_section(frame: &mut Frame, areas: &LayoutAreas, styles: &UiStyle
     ];
 
     let title_inner = Block::bordered().inner(areas.title);
-    frame.render_widget(
-        Paragraph::new(title_content).centered(),
-        title_inner,
-    );
+    frame.render_widget(Paragraph::new(title_content).centered(), title_inner);
 }
 
-fn render_status_section(frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &UiStyles) {
+fn render_status_section(
+    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &UiStyles,
+) {
     let status_block = create_bordered_block(styles.status);
     frame.render_widget(&status_block, areas.status);
 
@@ -105,18 +102,15 @@ fn render_status_section(frame: &mut Frame, areas: &LayoutAreas, state: &AppStat
         state.filters.filters.len()
     );
 
-    let status_line = Line::from(status_text)
-        .centered()
-        .style(styles.status);
+    let status_line = Line::from(status_text).centered().style(styles.status);
 
     let status_inner = Block::bordered().inner(areas.status);
-    frame.render_widget(
-        Paragraph::new(status_line).centered(),
-        status_inner,
-    );
+    frame.render_widget(Paragraph::new(status_line).centered(), status_inner);
 }
 
-fn render_main_sections(frame: &mut Frame, areas: &LayoutAreas, state: &mut AppState, styles: &UiStyles) {
+fn render_main_sections(
+    frame: &mut Frame, areas: &LayoutAreas, state: &mut AppState, styles: &UiStyles,
+) {
     let input_block = Block::bordered()
         .title(" 📝 Input Parameters ")
         .title_style(styles.input_block)
