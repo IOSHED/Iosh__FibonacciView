@@ -12,11 +12,10 @@ async fn main() {
             num_bigint::BigInt::from(0),
             num_bigint::BigInt::from(1),
         )))
-        .set_range_by_id(Some(0..50));
+        .set_range_by_id(Some(1..100))
+        .add_filter(|num| num % BigInt::from(2)  == BigInt::from(0));
 
-    builder.add_filter(|num| num > &BigInt::from(20_000));
-
-    println!("Начинаем расчет чисел Фибоначчи (0..50, только четные)...");
+    println!("Начинаем расчет чисел Фибоначчи (1..100, только четные)...");
     println!("Задача запущена в фоновом режиме.\n");
 
     let calc = FiboCalc::new(builder);

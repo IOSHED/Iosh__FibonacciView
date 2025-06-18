@@ -11,7 +11,3 @@ tokio = { version = "1.45.1", features = ["full"] }
 [[example]]
 name = "simple_usage"
 path = "examples/simple_usage.rs"
-
-[[example]]
-name = "advanced_usage"
-path = "examples/advanced_usage.rs"
