@@ -27,13 +27,12 @@ pub async fn calculate_fibonacci_task(builder: FiboBuilder) -> Vec<BigInt> {
 
     if end > 2 {
         let implementation_fibo = LinealFibo::new(Some(start_nums));
-        result.extend(implementation_fibo.take(end - 2));
+        result.extend(implementation_fibo.skip(if start > 2 { start - 2 } else { 0 }).take(end - 2));
     }
 
     let filters = builder.get_filters();
     result
         .into_iter()
-        .skip(start)
         .filter(|n| filters.iter().all(|func| func(n)))
         .collect()
 }
