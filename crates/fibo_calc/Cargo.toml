@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 num-bigint = "0.4.6"
+thiserror = "2.0.12"
+tokio = "1.45.1"

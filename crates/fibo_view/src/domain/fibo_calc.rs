@@ -1,5 +1,5 @@
 use crate::app::{Filter, FilterType};
-use fibo_calc::{FiboBuilder, FiboCalc};
+use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskResult};
 use num_bigint::BigInt;
 
 pub async fn calculate_fibonacci(
@@ -20,5 +20,9 @@ pub async fn calculate_fibonacci(
     }
 
     let fibo_calc = FiboCalc::new(builder);
-    fibo_calc.calc().await
+    match fibo_calc.calc().await {
+        FiboTaskResult::Calculation(_) => vec![],
+        FiboTaskResult::Result(res) => res,
+        FiboTaskResult::Error(_) => vec![],
+    }
 }

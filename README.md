@@ -17,6 +17,7 @@ Screen3 (Has filters):
 1) Async calculation
 2) Scroll nums
 3) Matrix math Fibo Nums
-4) CI CD for realize
+4) CI/CD for realize
 5) Add complex filters
 6) Smart cache
+7) Cntr+C for copy selected num
