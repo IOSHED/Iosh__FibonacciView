@@ -1,13 +1,16 @@
-mod calculate;
+mod calculate_fibo_task;
 
-pub use calculate::calculate_fibonacci_task;
+pub use calculate_fibo_task::calculate_fibo_task;
 
 use num_bigint::BigInt;
-use crate::error::FiboError;
+use tokio::sync::mpsc;
 
 pub enum FiboTaskResult {
     /// Return % progress
     Calculation(u8),
     Result(Vec<BigInt>),
-    Error(FiboError)
 }
+
+pub type FiboTaskSender = mpsc::UnboundedSender<FiboTaskResult>;
+
+pub type FiboTaskReceiver = mpsc::UnboundedReceiver<FiboTaskResult>;

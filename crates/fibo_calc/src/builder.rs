@@ -2,7 +2,7 @@ use num_bigint::BigInt;
 use std::ops::Range;
 
 
-type FilterFn = Box<dyn Fn(&BigInt) -> bool>;
+type FilterFn = Box<dyn Fn(&BigInt) -> bool + Send + Sync>;
 
 #[derive(Default)]
 pub struct FiboBuilder {
@@ -28,7 +28,9 @@ impl FiboBuilder {
         self.range_by_index.is_none() && self.other_filters.is_empty()
     }
 
-    pub fn add_filter(&mut self, filter: impl Fn(&BigInt) -> bool + 'static) -> &mut Self {
+    pub fn add_filter(
+        &mut self, filter: impl Fn(&BigInt) -> bool + Send + Sync + 'static,
+    ) -> &mut Self {
         self.other_filters.push(Box::new(filter));
         self
     }

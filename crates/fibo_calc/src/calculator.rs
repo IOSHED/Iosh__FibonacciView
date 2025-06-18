@@ -1,7 +1,6 @@
-
 use crate::builder::FiboBuilder;
 use crate::task;
-use crate::task::FiboTaskResult;
+use crate::task::FiboTaskReceiver;
 
 pub struct FiboCalc {
     builder: FiboBuilder,
@@ -12,8 +11,13 @@ impl FiboCalc {
         Self { builder }
     }
 
-    pub async fn calc(self) -> FiboTaskResult {
-        let result = task::calculate_fibonacci_task(self.builder).await;
-        FiboTaskResult::Result(result)
+    pub fn calc_background(self) -> FiboTaskReceiver {
+        let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
+
+        tokio::spawn(async move {
+            task::calculate_fibo_task(self.builder, sender).await;
+        });
+
+        receiver
     }
 }
