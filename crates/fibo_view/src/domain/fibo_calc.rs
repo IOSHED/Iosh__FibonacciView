@@ -19,10 +19,14 @@ pub async fn calculate_fibonacci(
         };
     }
 
-    let fibo_calc = FiboCalc::new(builder);
-    match fibo_calc.calc().await {
-        FiboTaskResult::Calculation(_) => vec![],
-        FiboTaskResult::Result(res) => res,
-        FiboTaskResult::Error(_) => vec![],
+    let calc = FiboCalc::new(builder);
+    let mut receiver = calc.calc_background();
+
+    while let Some(result) = receiver.recv().await {
+        if let FiboTaskResult::Result(res) = result {
+            return res;
+        }
     }
+
+    vec![]
 }
