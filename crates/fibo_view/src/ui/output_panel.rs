@@ -14,6 +14,8 @@ struct ListStyles {
     example_text: Style,
     highlight: Style,
     selected_item: Style,
+    calculating_text: Style,
+    progress_text: Style,
 }
 
 impl Default for ListStyles {
@@ -26,6 +28,8 @@ impl Default for ListStyles {
             example_text: Style::new().cyan(),
             highlight: Style::new().bold().yellow(),
             selected_item: Style::new().bold().yellow().on_dark_gray(),
+            calculating_text: Style::new().bold().green(),
+            progress_text: Style::new().italic().light_blue(),
         }
     }
 }
@@ -44,7 +48,9 @@ impl<'a> ResultRenderer<'a> {
     }
 
     pub fn render(&self) -> List<'a> {
-        if self.state.output.results.is_empty() {
+        if self.state.output.progress.is_some() {
+            self.render_calculating_state()
+        } else if self.state.output.results.is_empty() {
             self.render_empty_state()
         } else {
             self.render_results()
@@ -81,6 +87,39 @@ impl<'a> ResultRenderer<'a> {
         List::new(items)
             .highlight_style(self.styles.selected_item)
             .block(Block::default())
+    }
+
+    fn render_calculating_state(&self) -> List<'a> {
+        let progress = self.state.output.progress.unwrap_or(0);
+        let calculating_items = self.create_calculating_state_items(progress);
+
+        List::new(calculating_items)
+            .highlight_style(self.styles.highlight)
+            .block(Block::default())
+    }
+
+    fn create_calculating_state_items(&self, progress: u8) -> Vec<ListItem<'a>> {
+        let spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+        let spinner_index = (progress / 10) as usize % spinner_chars.len();
+        let spinner = spinner_chars[spinner_index];
+
+        vec![
+            ListItem::new(""),
+            ListItem::new(format!("   {} Calculating Fibonacci sequence...", spinner))
+                .style(self.styles.calculating_text),
+            ListItem::new(""),
+            ListItem::new(format!("   📊 Progress: {}%", progress))
+                .style(self.styles.progress_text),
+            ListItem::new(""),
+            ListItem::new("   ⏳ Please wait while we compute the numbers...")
+                .style(self.styles.progress_text),
+            ListItem::new(""),
+            ListItem::new("   💡 Tip: The UI remains responsive during calculation!")
+                .style(self.styles.tip_item),
+            ListItem::new(""),
+            ListItem::new("   🔄 You can still navigate and interact with the interface")
+                .style(self.styles.tip_item),
+        ]
     }
 
     fn format_result_items(&self) -> Vec<ListItem<'a>> {

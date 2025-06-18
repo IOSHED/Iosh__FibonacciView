@@ -175,8 +175,7 @@ impl AppState {
                 (calculation_params.start1, calculation_params.start2),
                 calculation_params.range_start..calculation_params.range_end,
                 &self.filters.filters,
-            )
-            .await,
+            ).await,
         );
     }
 

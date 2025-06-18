@@ -6,7 +6,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     prelude::*,
     text::Line,
-    widgets::{Block, Paragraph},
+    widgets::{Block, Paragraph, Gauge},
 };
 
 use crate::app::AppState;
@@ -17,6 +17,7 @@ struct UiStyles {
     status: Style,
     input_block: Style,
     output_block: Style,
+    progress_bar: Style,
 }
 
 impl Default for UiStyles {
@@ -27,6 +28,7 @@ impl Default for UiStyles {
             status: Style::new().bold().green(),
             input_block: Style::new().bold().light_red(),
             output_block: Style::new().bold().cyan(),
+            progress_bar: Style::new().bold().green(),
         }
     }
 }
@@ -37,6 +39,7 @@ struct LayoutAreas {
     status: Rect,
     left: Rect,
     right: Rect,
+    progress: Rect,
 }
 
 pub fn draw(frame: &mut Frame, state: &mut AppState) {
@@ -45,16 +48,18 @@ pub fn draw(frame: &mut Frame, state: &mut AppState) {
 
     render_title_section(frame, &areas, &styles);
     render_status_section(frame, &areas, state, &styles);
+    render_progress_section(frame, &areas, state, &styles);
     render_main_sections(frame, &areas, state, &styles);
 }
 
 fn create_layout(area: Rect) -> LayoutAreas {
     let vertical = Layout::vertical([
         Constraint::Length(3),
+        Constraint::Length(3), // Progress bar area
         Constraint::Min(0),
         Constraint::Length(3),
     ]);
-    let [title_area, main_area, status_area] = vertical.areas(area);
+    let [title_area, progress_area, main_area, status_area] = vertical.areas(area);
 
     let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
     let [left_area, right_area] = horizontal.areas(main_area);
@@ -65,6 +70,7 @@ fn create_layout(area: Rect) -> LayoutAreas {
         status: status_area,
         left: left_area,
         right: right_area,
+        progress: progress_area,
     }
 }
 
@@ -129,4 +135,45 @@ fn render_main_sections(
 
     frame.render_widget(input_panel::render(state), inner_left);
     frame.render_widget(output_panel::render(state), inner_right);
+}
+
+fn render_progress_section(
+    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &UiStyles,
+) {
+    if let Some(progress) = state.output.progress {
+        let progress_block = Block::bordered()
+            .title(" ⏳ Calculation Progress ")
+            .title_style(styles.progress_bar)
+            .border_style(styles.progress_bar);
+
+        frame.render_widget(&progress_block, areas.progress);
+
+        let progress_inner = progress_block.inner(areas.progress);
+
+        let progress_char = match progress {
+            0..=25 => "█",
+            26..=50 => "▓",
+            51..=75 => "▒",
+            _ => "░",
+        };
+
+        let gauge = Gauge::default()
+            .block(Block::default())
+            .gauge_style(styles.progress_bar)
+            .percent(progress as u16)
+            .label(format!("{}% {} Computing Fibonacci...", progress, progress_char));
+
+        frame.render_widget(gauge, progress_inner);
+    } else {
+        let empty_block = Block::bordered()
+            .title(" 💤 Ready ")
+            .title_style(Style::new().dim())
+            .border_style(Style::new().dim());
+
+        let empty_inner = empty_block.inner(areas.progress);
+        frame.render_widget(empty_block, areas.progress);
+
+        let ready_text = Line::from("Press 'r' to start calculation").centered().style(Style::new().dim());
+        frame.render_widget(Paragraph::new(ready_text).centered(), empty_inner);
+    }
 }
