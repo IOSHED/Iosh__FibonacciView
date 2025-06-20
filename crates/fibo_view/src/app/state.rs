@@ -146,23 +146,25 @@ impl AppState {
         self.output.list_state.select(Some(new_index));
     }
 
-    pub async fn update_progress_bar(&mut self) {
-        if let Some(rec) = self.output.receiver.as_mut() {
-            if let Some(progress) = rec.recv().await {
-                match progress {
-                    FiboTaskResult::Calculation(p) => {
-                        self.output.results = vec![];
-                        self.output.progress = Some(p)
-                    }
-                    FiboTaskResult::Result(res) => {
-                        self.output.results = res;
-                        self.output.list_state.select(Some(0));
-                        self.output.progress = None;
-                    }
-                }
+    pub fn update_progress_bar(&mut self) {
+        let Some(receiver) = self.output.receiver.as_mut() else {
+            return;
+        };
+
+        match receiver.try_recv() {
+            Some(FiboTaskResult::Calculation(progress)) => {
+                self.output.results.clear();
+                self.output.progress = Some(progress);
             }
+            Some(FiboTaskResult::Result(res)) => {
+                self.output.results = res;
+                self.output.list_state.select(Some(0));
+                self.output.progress = None;
+            }
+            None => {}
         }
     }
+
 
     pub async fn calculate(&mut self) {
         self.count_use += 1;
