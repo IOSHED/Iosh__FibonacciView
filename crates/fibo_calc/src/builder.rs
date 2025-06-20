@@ -2,7 +2,7 @@ use num_bigint::BigInt;
 use std::ops::Range;
 
 
-type FilterFn = Box<dyn Fn(&BigInt) -> bool + Send + Sync>;
+pub type FilterFn = Box<dyn Fn(&BigInt) -> bool + Send + Sync>;
 
 #[derive(Default)]
 pub struct FiboBuilder {
