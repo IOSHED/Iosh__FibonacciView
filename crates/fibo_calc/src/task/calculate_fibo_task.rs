@@ -3,6 +3,9 @@ use crate::{FiboBuilder, FiboTaskResult};
 use num_bigint::BigInt;
 use rayon::prelude::*;
 
+const CHUNK_SIZE: usize = 1000;
+
+
 pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::FiboTaskSender) {
     if builder.is_none_filter() {
         let _ = sender.send(FiboTaskResult::Result(vec![]));
@@ -60,19 +63,34 @@ pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::Fibo
 }
 
 async fn apply_filters_with_progress(
-    sender: &crate::task::FiboTaskSender, numbers: Vec<BigInt>,
+    sender: &crate::task::FiboTaskSender,
+    numbers: Vec<BigInt>,
     filters: &[Box<dyn Fn(&BigInt) -> bool + Send + Sync>],
 ) -> Vec<BigInt> {
-    let mut filtered = Vec::with_capacity(numbers.len());
-    let mut filtered_count = 0;
-    let len_numbers = numbers.len();
+    let total_items = numbers.len();
+    if total_items == 0 {
+        return numbers;
+    }
 
-    for num in numbers {
-        if filters.iter().all(|f| f(&num)) {
-            filtered.push(num.clone());
-        }
-        filtered_count += 1;
-        send_progress(sender, filtered_count, len_numbers).await;
+    if filters.is_empty() {
+        send_progress(sender, total_items, total_items).await;
+        return numbers;
+    }
+
+    let mut filtered = Vec::with_capacity(total_items);
+    let mut processed = 0;
+
+    for chunk in numbers.chunks(CHUNK_SIZE) {
+        let filtered_chunk: Vec<BigInt> = chunk
+            .par_iter()
+            .filter(|num| filters.iter().all(|f| f(num)))
+            .cloned()
+            .collect();
+
+        filtered.extend(filtered_chunk);
+        processed += chunk.len();
+
+        send_progress(sender, processed, total_items).await;
     }
 
     filtered
