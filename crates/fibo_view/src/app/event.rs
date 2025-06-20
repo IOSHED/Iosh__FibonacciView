@@ -12,9 +12,21 @@ impl EventHandler {
         Self { state }
     }
 
+    pub async fn handle(state: &mut AppState) -> Result<bool> {
+        let mut handler = EventHandler::new(std::mem::take(state));
+        let result = handler.handle_events().await;
+        *state = handler.state;
+        result
+    }
+
     pub async fn handle_events(&mut self) -> Result<bool> {
+        if !event::poll(std::time::Duration::from_millis(0))? {
+            return Ok(false)
+        }
         match event::read()? {
-            Event::Key(key) if key.kind == KeyEventKind::Press => self.handle_key_event(key).await,
+            Event::Key(key) if key.kind == KeyEventKind::Press => {
+                self.handle_key_event(key).await
+            }
             _ => Ok(false),
         }
     }
@@ -142,11 +154,4 @@ impl EventHandler {
             InputMode::Normal => None,
         }
     }
-}
-
-pub async fn handle_events(state: &mut AppState) -> Result<bool> {
-    let mut handler = EventHandler::new(std::mem::take(state));
-    let result = handler.handle_events().await;
-    *state = handler.state;
-    result
 }

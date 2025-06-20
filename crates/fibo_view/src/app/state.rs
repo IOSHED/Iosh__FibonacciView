@@ -146,25 +146,25 @@ impl AppState {
         self.output.list_state.select(Some(new_index));
     }
 
-    pub fn update_progress_bar(&mut self) {
+    pub async fn update_progress_bar(&mut self) {
         let Some(receiver) = self.output.receiver.as_mut() else {
             return;
         };
 
-        match receiver.try_recv() {
-            Some(FiboTaskResult::Calculation(progress)) => {
-                self.output.results.clear();
-                self.output.progress = Some(progress);
+        if let Ok(msg) = receiver.try_recv() {
+            match msg {
+                FiboTaskResult::Calculation(progress) => {
+                    self.output.results.clear();
+                    self.output.progress = Some(progress);
+                }
+                FiboTaskResult::Result(res) => {
+                    self.output.results = res;
+                    self.output.list_state.select(Some(0));
+                    self.output.progress = None;
+                }
             }
-            Some(FiboTaskResult::Result(res)) => {
-                self.output.results = res;
-                self.output.list_state.select(Some(0));
-                self.output.progress = None;
-            }
-            None => {}
         }
     }
-
 
     pub async fn calculate(&mut self) {
         self.count_use += 1;
@@ -177,7 +177,8 @@ impl AppState {
                 (calculation_params.start1, calculation_params.start2),
                 calculation_params.range_start..calculation_params.range_end,
                 &self.filters.filters,
-            ).await,
+            )
+            .await,
         );
     }
 

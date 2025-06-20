@@ -6,7 +6,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     prelude::*,
     text::Line,
-    widgets::{Block, Paragraph, Gauge},
+    widgets::{Block, Gauge, Paragraph},
 };
 
 use crate::app::AppState;
@@ -161,7 +161,10 @@ fn render_progress_section(
             .block(Block::default())
             .gauge_style(styles.progress_bar)
             .percent(progress as u16)
-            .label(format!("{}% {} Computing Fibonacci...", progress, progress_char));
+            .label(format!(
+                "{}% {} Computing Fibonacci...",
+                progress, progress_char
+            ));
 
         frame.render_widget(gauge, progress_inner);
     } else {
@@ -173,7 +176,9 @@ fn render_progress_section(
         let empty_inner = empty_block.inner(areas.progress);
         frame.render_widget(empty_block, areas.progress);
 
-        let ready_text = Line::from("Press 'r' to start calculation").centered().style(Style::new().dim());
+        let ready_text = Line::from("Press 'r' to start calculation")
+            .centered()
+            .style(Style::new().dim());
         frame.render_widget(Paragraph::new(ready_text).centered(), empty_inner);
     }
 }
