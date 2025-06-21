@@ -2,27 +2,15 @@
 
 Screen1 (Empty result):
 
-<img src="./resources/docs/screen0.png" alt=""/>
+<img src="./resources/docs/screen0.png" height="512" alt=""/>
 
 Screen2 (Has not filters):
 
-<img src="./resources/docs/screen1.png" alt=""/>
+<img src="./resources/docs/screen1.png" height="512" alt=""/>
 
 Screen3 (Has filters):
 
-<img src="./resources/docs/screen2.png" alt=""/>
-
----
-
-# Task
-
-1) Scroll nums (smart: app view only nums which user look)
-2) Matrix math Fibo Nums
-3) CI/CD for realize 
-4) Add complex filters 
-5) Smart cache
-6) Cntr+C for copy selected num
-7) Coverage + tests
+<img src="./resources/docs/screen2.png" height="512" alt=""/>
 
 ---
 
@@ -61,5 +49,17 @@ cargo bench -p memory_profiling_view
 ```sh
 cargo tarpaulin --exclude-files "examples/*" --output-dir "./target/coverage/" --ignore-tests --out Html
 ```
+
+---
+
+# Task
+
+1) Scroll nums (smart: app view only nums which user look)
+2) Matrix math Fibo Nums
+3) CI/CD for realize
+4) Add complex filters
+5) Smart cache
+6) Cntr+C for copy selected num
+7) tests
 
 ---
