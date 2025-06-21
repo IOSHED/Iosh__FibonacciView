@@ -4,3 +4,6 @@ members = [
     "crates/fibo_view",
     "crates/fibo_calc",
 ]
+
+[profile.test]
+opt-level = 0
