@@ -1,8 +1,8 @@
+use crate::builder::FilterFn;
 use crate::implementation::lineal::LinealFibo;
 use crate::{FiboBuilder, FiboTaskResult};
 use num_bigint::BigInt;
 use rayon::prelude::*;
-use crate::builder::FilterFn;
 
 const CHUNK_SIZE: usize = 1000;
 
@@ -64,8 +64,7 @@ pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::Fibo
 }
 
 async fn apply_filters_with_progress(
-    sender: &crate::task::FiboTaskSender, numbers: Vec<BigInt>,
-    filters: &[FilterFn],
+    sender: &crate::task::FiboTaskSender, numbers: Vec<BigInt>, filters: &[FilterFn],
 ) -> Vec<BigInt> {
     let total_items = numbers.len();
     if total_items == 0 {

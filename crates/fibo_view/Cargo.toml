@@ -4,14 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-fibo_calc = { path = "../fibo_calc" }
-
 # Calculation
+fibo_calc  = { path = "../fibo_calc" }
 num-bigint = "0.4.6"
 kalkulator = "0.2.2"
 
 # Terminal
-ratatui = "0.29.0"
+ratatui   = "0.29.0"
 crossterm = "0.29.0"
 
 # Async

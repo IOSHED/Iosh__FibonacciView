@@ -20,7 +20,7 @@ pub async fn calculate_fibonacci(
     }
 
     let calc = FiboCalc::new(builder);
-    
+
 
     calc.calc_background()
 }

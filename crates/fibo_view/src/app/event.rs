@@ -21,12 +21,10 @@ impl EventHandler {
 
     pub async fn handle_events(&mut self) -> Result<bool> {
         if !event::poll(std::time::Duration::from_millis(0))? {
-            return Ok(false)
+            return Ok(false);
         }
         match event::read()? {
-            Event::Key(key) if key.kind == KeyEventKind::Press => {
-                self.handle_key_event(key).await
-            }
+            Event::Key(key) if key.kind == KeyEventKind::Press => self.handle_key_event(key).await,
             _ => Ok(false),
         }
     }
