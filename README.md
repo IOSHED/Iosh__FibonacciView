@@ -52,3 +52,14 @@ cargo bench -p memory_profiling_view
 После выполнения отчёт будет сохранён в директории `target/profiling`. Его можно визуализировать с помощью [dhat-viewer](https://nnethercote.github.io/dh_view/dh_view.html).
 
 ---
+
+# Coverage
+
+Для оценки покрытия тестами используется [cargo-tarpaulin](https://github.com/xd009642/tarpaulin). Отчёт о покрытии генерируется в формате HTML в директории `target/coverage`.
+
+**Запуск покрытия:**
+```sh
+cargo tarpaulin --exclude-files "examples/*" --output-dir "./target/coverage/" --ignore-tests --out Html
+```
+
+---
