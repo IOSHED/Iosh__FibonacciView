@@ -8,13 +8,20 @@ edition = "2024"
 fibo_calc  = { path = "../fibo_calc" }
 num-bigint = "0.4.6"
 kalkulator = "0.2.2"
-
 # Terminal
 ratatui   = "0.29.0"
 crossterm = "0.29.0"
-
 # Async
 tokio = { version = "1.45.1", features = ["rt", "rt-multi-thread", "macros"] }
 
+[dev-dependencies]
+dhat   = "0.3.3"
+
 [build-dependencies]
 winres = "0.1.12"
+
+[[bench]]
+# memory profile
+name = "memory_profiling_view"
+path = "benches/memory_profiling.rs"
+harness = false

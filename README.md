@@ -49,6 +49,6 @@ cargo bench -p memory_profiling_calc
 cargo bench -p memory_profiling_view
 ```
 
-После выполнения отчёт будет сохранён в директории `target/profiling/dhat-heap.json`. Его можно визуализировать с помощью [dhat-viewer](https://nnethercote.github.io/dh_view/dh_view.html).
+После выполнения отчёт будет сохранён в директории `target/profiling`. Его можно визуализировать с помощью [dhat-viewer](https://nnethercote.github.io/dh_view/dh_view.html).
 
 ---

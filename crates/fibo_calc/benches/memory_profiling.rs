@@ -12,7 +12,7 @@ fn main() {
     fs::create_dir_all(output_dir).expect("Failed to create directory");
 
     let _profiler = dhat::Profiler::builder()
-        .file_name(format!("{}/dhat-heap.json", output_dir))
+        .file_name(format!("{}/dhat-heap-calc.json", output_dir))
         .build();
 
     let rt = Runtime::new().unwrap();

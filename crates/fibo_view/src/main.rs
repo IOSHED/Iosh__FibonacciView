@@ -1,8 +1,4 @@
-use crate::app::TerminalApp;
-
-mod app;
-mod domain;
-mod ui;
+use fibo_view::TerminalApp;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

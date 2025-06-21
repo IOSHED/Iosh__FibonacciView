@@ -25,5 +25,5 @@ harness = false
 [[bench]]
 # memory profile
 name = "memory_profiling_calc"
-path = "benches/memory_profiling_calc.rs"
+path = "benches/memory_profiling.rs"
 harness = false
