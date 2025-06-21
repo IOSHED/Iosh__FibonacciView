@@ -1,6 +1,6 @@
 use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskResult};
-use std::hint::black_box;
 use std::fs;
+use std::hint::black_box;
 use tokio::runtime::Runtime;
 
 #[global_allocator]

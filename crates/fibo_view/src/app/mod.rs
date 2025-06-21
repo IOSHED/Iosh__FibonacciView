@@ -12,6 +12,12 @@ pub struct TerminalApp {
     state: AppState,
 }
 
+impl Default for TerminalApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TerminalApp {
     pub fn new() -> Self {
         Self {

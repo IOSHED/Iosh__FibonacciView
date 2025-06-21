@@ -1,5 +1,5 @@
-use std::fs;
 use fibo_view::TerminalApp;
+use std::fs;
 
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
