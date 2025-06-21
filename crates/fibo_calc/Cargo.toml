@@ -11,6 +11,7 @@ tokio = { version = "1.45.1", features = ["full"] }
 [dev-dependencies]
 criterion = "0.6"
 dhat      = "0.3.3"
+test-case = "2.0.0-rc1"
 
 [[example]]
 name = "simple_usage"
