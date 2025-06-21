@@ -50,6 +50,13 @@ mod tests {
         assert_eq!(fibo.last, BigInt::from(1));
     }
 
+    #[test]
+    fn test_default_builder_in_new_method() {
+        let fibo = LinealFibo::new(None);
+        assert_eq!(fibo.pre_last, BigInt::from(-1));
+        assert_eq!(fibo.last, BigInt::from(1));
+    }
+
     #[test_case((BigInt::from(0), BigInt::from(1)), 1, 1; "classic start")]
     #[test_case((BigInt::from(2), BigInt::from(3)), 3, 5; "custom start")]
     #[test_case((BigInt::from(-5), BigInt::from(8)), 8, 3; "negative start")]
