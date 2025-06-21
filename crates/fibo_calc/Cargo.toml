@@ -5,9 +5,25 @@ edition = "2024"
 
 [dependencies]
 num-bigint = "0.4.6"
-rayon = "1.10.0"
+rayon      = "1.10.0"
 tokio = { version = "1.45.1", features = ["full"] }
+
+[dev-dependencies]
+criterion = "0.6"
+dhat      = "0.3.3"
 
 [[example]]
 name = "simple_usage"
 path = "examples/simple_usage.rs"
+
+[[bench]]
+# time profile
+name = "bench_fibo"
+path = "benches/bench_fibo.rs"
+harness = false
+
+[[bench]]
+# memory profile
+name = "memory_profiling"
+path = "benches/memory_profiling.rs"
+harness = false
