@@ -1,6 +1,6 @@
 mod input_panel;
 mod output_panel;
-
+mod list_styles;
 
 use ratatui::{
     layout::{Constraint, Layout, Rect},
@@ -9,30 +9,8 @@ use ratatui::{
     widgets::{Block, Gauge, Paragraph},
     Frame,
 };
-
+use list_styles::ListStyles;
 use crate::app::AppState;
-
-struct UiStyles {
-    title: Style,
-    subtitle: Style,
-    status: Style,
-    input_block: Style,
-    output_block: Style,
-    progress_bar: Style,
-}
-
-impl Default for UiStyles {
-    fn default() -> Self {
-        Self {
-            title: Style::new().bold().cyan(),
-            subtitle: Style::new().italic().light_blue(),
-            status: Style::new().bold().green(),
-            input_block: Style::new().bold().light_red(),
-            output_block: Style::new().bold().cyan(),
-            progress_bar: Style::new().bold().green(),
-        }
-    }
-}
 
 struct LayoutAreas {
     title: Rect,
@@ -44,7 +22,7 @@ struct LayoutAreas {
 }
 
 pub fn draw(frame: &mut Frame, state: &mut AppState) {
-    let styles = UiStyles::default();
+    let styles = ListStyles::default();
     let areas = create_layout(frame.area());
 
     render_title_section(frame, &areas, &styles);
@@ -75,12 +53,9 @@ fn create_layout(area: Rect) -> LayoutAreas {
     }
 }
 
-fn create_bordered_block(style: Style) -> Block<'static> {
-    Block::bordered().title_style(style).border_style(style)
-}
-
-fn render_title_section(frame: &mut Frame, areas: &LayoutAreas, styles: &UiStyles) {
-    let title_block = create_bordered_block(styles.title);
+fn render_title_section(frame: &mut Frame, areas: &LayoutAreas, styles: &ListStyles) {
+    let style = styles.title;
+    let title_block = Block::bordered().title_style(style).border_style(style);
     frame.render_widget(&title_block, areas.title);
 
     let title_content = vec![
@@ -97,9 +72,10 @@ fn render_title_section(frame: &mut Frame, areas: &LayoutAreas, styles: &UiStyle
 }
 
 fn render_status_section(
-    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &UiStyles,
+    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &ListStyles,
 ) {
-    let status_block = create_bordered_block(styles.status);
+    let style = styles.status;
+    let status_block = Block::bordered().title_style(style).border_style(style);
     frame.render_widget(&status_block, areas.status);
 
     let position_info = if !state.output.results.is_empty() {
@@ -124,7 +100,7 @@ fn render_status_section(
 }
 
 fn render_main_sections(
-    frame: &mut Frame, areas: &LayoutAreas, state: &mut AppState, styles: &UiStyles,
+    frame: &mut Frame, areas: &LayoutAreas, state: &mut AppState, styles: &ListStyles,
 ) {
     let input_block = Block::bordered()
         .title(" 📝 Input Parameters ")
@@ -147,47 +123,52 @@ fn render_main_sections(
 }
 
 fn render_progress_section(
-    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &UiStyles,
+    frame: &mut Frame, areas: &LayoutAreas, state: &AppState, styles: &ListStyles,
 ) {
     if let Some(progress) = state.output.progress {
-        let progress_block = Block::bordered()
-            .title(" ⏳ Calculation Progress ")
-            .title_style(styles.progress_bar)
-            .border_style(styles.progress_bar);
-
-        frame.render_widget(&progress_block, areas.progress);
-
-        let progress_inner = progress_block.inner(areas.progress);
-
-        let progress_char = match progress {
-            0..=25 => "█",
-            26..=50 => "▓",
-            51..=75 => "▒",
-            _ => "░",
-        };
-
-        let gauge = Gauge::default()
-            .block(Block::default())
-            .gauge_style(styles.progress_bar)
-            .percent(progress as u16)
-            .label(format!(
-                "{}% {} Computing Fibonacci...",
-                progress, progress_char
-            ));
-
-        frame.render_widget(gauge, progress_inner);
-    } else {
-        let empty_block = Block::bordered()
-            .title(" 💤 Ready ")
-            .title_style(Style::new().dim())
-            .border_style(Style::new().dim());
-
-        let empty_inner = empty_block.inner(areas.progress);
-        frame.render_widget(empty_block, areas.progress);
-
-        let ready_text = Line::from("Press 'r' to start calculation")
-            .centered()
-            .style(Style::new().dim());
-        frame.render_widget(Paragraph::new(ready_text).centered(), empty_inner);
+        render_progress_bar_with_progress(frame, areas, styles, progress);
+        return;
     }
+    let empty_block = Block::bordered()
+        .title(" 💤 Ready ")
+        .title_style(Style::new().dim())
+        .border_style(Style::new().dim());
+
+    let empty_inner = empty_block.inner(areas.progress);
+    frame.render_widget(empty_block, areas.progress);
+
+    let ready_text = Line::from("Press 'r' to start calculation")
+        .centered()
+        .style(Style::new().dim());
+    frame.render_widget(Paragraph::new(ready_text).centered(), empty_inner);
+
+}
+
+fn render_progress_bar_with_progress(frame: &mut Frame, areas: &LayoutAreas, styles: &ListStyles, progress: u8) {
+    let progress_block = Block::bordered()
+        .title(" ⏳ Calculation Progress ")
+        .title_style(styles.progress_bar)
+        .border_style(styles.progress_bar);
+
+    frame.render_widget(&progress_block, areas.progress);
+
+    let progress_inner = progress_block.inner(areas.progress);
+
+    let progress_char = match progress {
+        0..=25 => "█",
+        26..=50 => "▓",
+        51..=75 => "▒",
+        _ => "░",
+    };
+
+    let gauge = Gauge::default()
+        .block(Block::default())
+        .gauge_style(styles.progress_bar)
+        .percent(progress as u16)
+        .label(format!(
+            "{}% {} Computing Fibonacci...",
+            progress, progress_char
+        ));
+
+    frame.render_widget(gauge, progress_inner);
 }
