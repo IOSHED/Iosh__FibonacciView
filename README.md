@@ -54,12 +54,12 @@ cargo tarpaulin --exclude-files "examples/*" --output-dir "./target/coverage/" -
 
 # Task
 
-1) Scroll nums (smart: app view only nums which user look)
-2) Matrix math Fibo Nums
-3) CI/CD for realize
-4) Add complex filters
-5) Smart cache
-6) Cntr+C for copy selected num
+1) Matrix math Fibo Nums
+2) CI/CD for realize
+3) Add complex filters
+4) Smart cache
+5) Cntr+C for copy selected num and Cntr+Shift+C for copy all
+6) More shortcuts 
 7) tests
 
 ---
