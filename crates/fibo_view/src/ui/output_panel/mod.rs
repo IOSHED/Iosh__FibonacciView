@@ -1,7 +1,7 @@
+use crate::app::state::AppState;
+use crate::ui::output_panel::result_renderer::ResultRenderer;
 use ratatui::layout::Rect;
 use ratatui::widgets::List;
-use crate::app::AppState;
-use crate::ui::output_panel::result_renderer::ResultRenderer;
 
 mod list_styles;
 mod result_renderer;

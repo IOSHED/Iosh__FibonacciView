@@ -1,4 +1,4 @@
-use crate::app::{AppState, InputMode};
+use crate::app::state::{AppState, InputMode};
 use ratatui::{
     prelude::*,
     text::{Line, Text},

@@ -1,4 +1,4 @@
-use crate::app::AppState;
+use crate::app::state::AppState;
 use num_bigint::BigInt;
 use ratatui::prelude::*;
 use ratatui::{

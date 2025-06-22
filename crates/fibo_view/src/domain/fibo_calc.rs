@@ -1,4 +1,4 @@
-use crate::app::{Filter, FilterType};
+use crate::app::state::{Filter, FilterType};
 use fibo_calc::{FiboBuilder, FiboCalc, FiboTaskReceiver};
 use num_bigint::BigInt;
 

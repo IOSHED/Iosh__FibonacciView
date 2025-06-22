@@ -1,8 +1,8 @@
-mod event;
-mod state;
+pub mod event;
+pub mod state;
 
-pub use self::state::{AppState, Filter, FilterType, InputMode};
 use crate::app::event::EventHandler;
+use crate::app::state::AppState;
 use crate::ui;
 use ratatui::DefaultTerminal;
 use std::io;
@@ -31,7 +31,7 @@ impl TerminalApp {
             if EventHandler::handle(&mut self.state).await? {
                 break;
             }
-            self.state.update_progress_bar().await;
+            self.state.update_progress_bar();
             self.terminal.draw(|f| ui::draw(f, &mut self.state))?;
         }
         Ok(())

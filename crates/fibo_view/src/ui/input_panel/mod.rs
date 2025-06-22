@@ -1,6 +1,6 @@
-use ratatui::widgets::Paragraph;
-use crate::app::AppState;
+use crate::app::state::AppState;
 use crate::ui::input_panel::result_renderer::ResultRenderer;
+use ratatui::widgets::Paragraph;
 
 mod list_styles;
 mod result_renderer;

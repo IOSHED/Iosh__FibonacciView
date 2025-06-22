@@ -1,16 +1,16 @@
 mod input_panel;
-mod output_panel;
 mod list_styles;
+mod output_panel;
 
+use crate::app::state::AppState;
+use list_styles::ListStyles;
 use ratatui::{
+    Frame,
     layout::{Constraint, Layout, Rect},
     prelude::*,
     text::Line,
     widgets::{Block, Gauge, Paragraph},
-    Frame,
 };
-use list_styles::ListStyles;
-use crate::app::AppState;
 
 struct LayoutAreas {
     title: Rect,
@@ -141,10 +141,11 @@ fn render_progress_section(
         .centered()
         .style(Style::new().dim());
     frame.render_widget(Paragraph::new(ready_text).centered(), empty_inner);
-
 }
 
-fn render_progress_bar_with_progress(frame: &mut Frame, areas: &LayoutAreas, styles: &ListStyles, progress: u8) {
+fn render_progress_bar_with_progress(
+    frame: &mut Frame, areas: &LayoutAreas, styles: &ListStyles, progress: u8,
+) {
     let progress_block = Block::bordered()
         .title(" ⏳ Calculation Progress ")
         .title_style(styles.progress_bar)

@@ -1,5 +1,5 @@
 use crate::app::state::InputMode;
-use crate::app::{AppState, FilterType};
+use crate::app::state::{AppState, FilterType};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use std::io::{Error, Result};
 
@@ -40,11 +40,11 @@ impl EventHandler {
         match key.code {
             KeyCode::Char(c) => self.handle_normal_char(c).await,
             KeyCode::Up => {
-                self.state.scroll_results(-1).await;
+                self.state.scroll_results(-1);
                 Ok(false)
             }
             KeyCode::Down => {
-                self.state.scroll_results(1).await;
+                self.state.scroll_results(1);
                 Ok(false)
             }
             _ => Ok(false),
