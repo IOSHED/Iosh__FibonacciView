@@ -178,12 +178,7 @@ impl AppState {
                 }
             }
             -1 => {
-                if selected_index
-                    < self
-                        .output
-                        .viewport_start
-                        .saturating_add(PADDING_SCROLLING)
-                {
+                if selected_index < self.output.viewport_start.saturating_add(PADDING_SCROLLING) {
                     self.output.viewport_start =
                         self.output.viewport_start.saturating_sub(SPEED_SCROLLING);
                 }

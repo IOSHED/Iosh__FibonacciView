@@ -1,44 +1,16 @@
 use crate::app::AppState;
 use num_bigint::BigInt;
-use ratatui::prelude::{Rect, Stylize};
+use ratatui::prelude::*;
 use ratatui::{
     style::Style,
     widgets::{Block, List, ListItem},
 };
 
-struct ListStyles {
-    empty_text: Style,
-    tips_header: Style,
-    tip_item: Style,
-    example_header: Style,
-    example_text: Style,
-    highlight: Style,
-    selected_item: Style,
-    calculating_text: Style,
-    progress_text: Style,
-    note_list_item: Style,
-}
+use crate::ui::output_panel::list_styles::ListStyles;
 
-impl Default for ListStyles {
-    fn default() -> Self {
-        Self {
-            empty_text: Style::new().italic().dark_gray(),
-            tips_header: Style::new().bold().yellow(),
-            tip_item: Style::new().yellow(),
-            example_header: Style::new().bold().cyan(),
-            example_text: Style::new().cyan(),
-            highlight: Style::new().bold().yellow(),
-            selected_item: Style::new().bold().yellow().on_dark_gray(),
-            calculating_text: Style::new().bold().green(),
-            progress_text: Style::new().italic().light_blue(),
-            note_list_item: Style::new().italic().dark_gray(),
-        }
-    }
-}
-
-struct ResultRenderer<'a> {
-    state: &'a AppState,
-    styles: ListStyles,
+pub struct ResultRenderer<'a> {
+    pub state: &'a AppState,
+    pub styles: ListStyles,
 }
 
 impl<'a> ResultRenderer<'a> {
@@ -195,11 +167,4 @@ impl<'a> ResultRenderer<'a> {
 
         ListItem::new(formatted).style(style)
     }
-}
-
-pub fn render(state: &mut AppState, area: Rect) -> List {
-    let viewport_height = area.height.saturating_sub(8) as usize;
-    state.output.viewport_size = viewport_height.max(1);
-
-    ResultRenderer::new(state).render()
 }

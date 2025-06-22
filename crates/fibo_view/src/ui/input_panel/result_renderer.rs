@@ -5,45 +5,11 @@ use ratatui::{
     widgets::{Paragraph, Wrap},
 };
 
-struct ListStyles {
-    active_input: Style,
-    inactive_start: Style,
-    inactive_range: Style,
-    inactive_filter: Style,
-    filter_header: Style,
-    no_filter: Style,
-    filter_item: Style,
-    action_header: Style,
-    action_item: Style,
-    nav_header: Style,
-    nav_item: Style,
-    error_header: Style,
-    error_text: Style,
-}
+use crate::ui::input_panel::list_styles::ListStyles;
 
-impl Default for ListStyles {
-    fn default() -> Self {
-        Self {
-            active_input: Style::new().bold().yellow(),
-            inactive_start: Style::new().white(),
-            inactive_range: Style::new().light_blue(),
-            inactive_filter: Style::new().light_green(),
-            filter_header: Style::new().bold().magenta(),
-            no_filter: Style::new().italic().dark_gray(),
-            filter_item: Style::new().light_magenta(),
-            action_header: Style::new().bold().cyan(),
-            action_item: Style::new().cyan(),
-            nav_header: Style::new().bold().green(),
-            nav_item: Style::new().green(),
-            error_header: Style::new().bold().red(),
-            error_text: Style::new().red(),
-        }
-    }
-}
-
-struct ResultRenderer<'a> {
-    state: &'a AppState,
-    styles: ListStyles,
+pub struct ResultRenderer<'a> {
+    pub state: &'a AppState,
+    pub styles: ListStyles,
 }
 
 impl<'a> ResultRenderer<'a> {
@@ -160,8 +126,4 @@ impl<'a> ResultRenderer<'a> {
             ]);
         }
     }
-}
-
-pub fn render(state: &AppState) -> Paragraph {
-    ResultRenderer::new(state).render()
 }

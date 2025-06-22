@@ -1,12 +1,13 @@
 mod input_panel;
 mod output_panel;
 
+
 use ratatui::{
-    Frame,
     layout::{Constraint, Layout, Rect},
     prelude::*,
     text::Line,
     widgets::{Block, Gauge, Paragraph},
+    Frame,
 };
 
 use crate::app::AppState;
