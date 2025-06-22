@@ -151,10 +151,18 @@ impl AppState {
 
     async fn parse_calculation_parameters(&mut self) -> Result<CalculationParams, ()> {
         Ok(CalculationParams {
-            start1: self.parse_expr_as_bigint(&self.input.start1.clone()).await?,
-            start2: self.parse_expr_as_bigint(&self.input.start2.clone()).await?,
-            range_start: self.parse_expr_as_usize(&self.input.range_start.clone()).await?,
-            range_end: self.parse_expr_as_usize(&self.input.range_end.clone()).await?,
+            start1: self
+                .parse_expr_as_bigint(&self.input.start1.clone())
+                .await?,
+            start2: self
+                .parse_expr_as_bigint(&self.input.start2.clone())
+                .await?,
+            range_start: self
+                .parse_expr_as_usize(&self.input.range_start.clone())
+                .await?,
+            range_end: self
+                .parse_expr_as_usize(&self.input.range_end.clone())
+                .await?,
         })
     }
 
@@ -176,5 +184,201 @@ impl AppState {
                 Err(())
             }
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fibo_calc::FiboTaskResult;
+    use test_case::test_case;
+    use tokio::sync::mpsc;
+
+
+    fn create_test_state(
+        results: Vec<BigInt>, viewport_start: usize, viewport_size: usize,
+    ) -> AppState {
+        let mut state = AppState::default();
+        state.output.results = results;
+        state.output.viewport_start = viewport_start;
+        state.output.viewport_size = viewport_size;
+        state
+    }
+
+    #[test_case(SPEED_SCROLLING, 2, 1 => 0; "viewport too small")]
+    #[test_case(10, 9, 1 => SPEED_SCROLLING; "scroll down")]
+    #[test_case(10, SPEED_SCROLLING * 2, -1 => SPEED_SCROLLING; "scroll up")]
+    fn test_viewport_updates(viewport_size: usize, selected_index: usize, direction: i32) -> usize {
+        let mut state = create_test_state(
+            (0..20).map(|i| i.into()).collect(),
+            if direction == -1 {
+                SPEED_SCROLLING * 2
+            } else {
+                0
+            },
+            viewport_size,
+        );
+
+        state.update_viewport(selected_index, direction);
+        state.output.viewport_start
+    }
+
+    #[test_case(14, 1 => 5; "scroll down at boundary")]
+    #[test_case(0, -1 => 0; "scroll up at boundary")]
+    fn test_viewport_boundaries(selected_index: usize, direction: i32) -> usize {
+        let mut state = create_test_state(
+            (0..15).map(|i| i.into()).collect(),
+            if direction == 1 { 5 } else { 0 },
+            10,
+        );
+
+        state.update_viewport(selected_index, direction);
+        state.output.viewport_start
+    }
+
+    #[test_case(7, 1; "scroll within safe zone")]
+    #[test_case(7, 0; "invalid direction")]
+    fn test_viewport_unchanged(selected_index: usize, direction: i32) {
+        let initial_viewport_start = 5;
+        let mut state = create_test_state(
+            (0..20).map(|i| i.into()).collect(),
+            initial_viewport_start,
+            10,
+        );
+
+        state.update_viewport(selected_index, direction);
+
+        assert_eq!(
+            state.output.viewport_start, initial_viewport_start,
+            "Viewport position should remain unchanged"
+        );
+    }
+
+    #[test]
+    fn test_new_app_state() {
+        let state = AppState::new();
+        assert_eq!(state.count_use, 0);
+        assert!(state.error.is_none());
+        assert_eq!(state.output.list_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn test_clear_filters() {
+        let mut state = AppState::new();
+        state.filters.filters.push(Filter {
+            filter_type: FilterType::Le,
+            value: BigInt::from(5),
+        });
+
+        state.clear_filters();
+        assert!(state.filters.filters.is_empty());
+    }
+
+    #[test]
+    fn test_delete_filter() {
+        let mut state = AppState::new();
+        state.filters.filters.push(Filter {
+            filter_type: FilterType::Le,
+            value: BigInt::from(5),
+        });
+
+        state.delete_filter();
+        assert!(state.filters.filters.is_empty());
+    }
+
+    #[test]
+    fn test_scroll_results_empty() {
+        let mut state = AppState::new();
+        state.scroll_results(1);
+        assert_eq!(state.output.list_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn test_scroll_results_forward() {
+        let mut state = AppState::new();
+        state.output.results = vec![BigInt::from(1), BigInt::from(2), BigInt::from(3)];
+        state.output.list_state.select(Some(0));
+
+        state.scroll_results(1);
+        assert_eq!(state.output.list_state.selected(), Some(1));
+    }
+
+    #[test]
+    fn test_scroll_results_backward() {
+        let mut state = AppState::new();
+        state.output.results = vec![BigInt::from(1), BigInt::from(2), BigInt::from(3)];
+        state.output.list_state.select(Some(1));
+
+        state.scroll_results(-1);
+        assert_eq!(state.output.list_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn test_scroll_results_bounds() {
+        let mut state = AppState::new();
+        state.output.results = vec![BigInt::from(1), BigInt::from(2)];
+        state.output.list_state.select(Some(0));
+
+        state.scroll_results(1);
+        state.scroll_results(1);
+        assert_eq!(state.output.list_state.selected(), Some(1));
+
+        state.scroll_results(-1);
+        state.scroll_results(-1);
+        assert_eq!(state.output.list_state.selected(), Some(0));
+    }
+
+    #[tokio::test]
+    async fn test_add_filter_valid_expression() {
+        let mut state = AppState::new();
+        state.input.filter_value = "5".to_string();
+
+        let result = state.add_filter().await;
+        assert!(result.is_ok());
+        assert_eq!(state.filters.filters.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_add_filter_invalid_expression() {
+        let mut state = AppState::new();
+        state.input.filter_value = "invalid".to_string();
+
+        let result = state.add_filter().await;
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_update_progress_bar() {
+        let mut state = AppState::new();
+        let (sender, receiver) = mpsc::unbounded_channel();
+
+        state.output.receiver = Some(receiver);
+
+        sender
+            .send(FiboTaskResult::Calculation(50.0 as u8))
+            .unwrap();
+        state.update_progress_bar();
+        assert_eq!(state.output.progress, Some(50));
+        assert!(state.output.results.is_empty());
+
+        let result = vec![BigInt::from(1), BigInt::from(2)];
+        sender.send(FiboTaskResult::Result(result.clone())).unwrap();
+        state.update_progress_bar();
+        assert_eq!(state.output.results, result);
+        assert_eq!(state.output.progress, None);
+        assert_eq!(state.output.list_state.selected(), Some(0));
+    }
+
+    #[tokio::test]
+    async fn test_calculate_invalid_range() {
+        let mut state = AppState::new();
+        state.input.range_start = "10".to_string();
+        state.input.range_end = "5".to_string();
+        state.input.start1 = "0".to_string();
+        state.input.start2 = "1".to_string();
+
+        state.calculate().await;
+        assert_eq!(state.error, Some("Range end must be > start".to_string()));
     }
 }

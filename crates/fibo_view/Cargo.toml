@@ -15,7 +15,8 @@ crossterm = "0.29.0"
 tokio = { version = "1.45.1", features = ["rt", "rt-multi-thread", "macros"] }
 
 [dev-dependencies]
-dhat   = "0.3.3"
+dhat      = "0.3.3"
+test-case = "2.0.0-rc1"
 
 [build-dependencies]
 winres = "0.1.12"
