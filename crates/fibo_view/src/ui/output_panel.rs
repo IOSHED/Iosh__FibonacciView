@@ -1,6 +1,6 @@
 use crate::app::AppState;
 use num_bigint::BigInt;
-use ratatui::prelude::Stylize;
+use ratatui::prelude::{Rect, Stylize};
 use ratatui::{
     style::Style,
     widgets::{Block, List, ListItem},
@@ -16,6 +16,7 @@ struct ListStyles {
     selected_item: Style,
     calculating_text: Style,
     progress_text: Style,
+    note_list_item: Style,
 }
 
 impl Default for ListStyles {
@@ -30,6 +31,7 @@ impl Default for ListStyles {
             selected_item: Style::new().bold().yellow().on_dark_gray(),
             calculating_text: Style::new().bold().green(),
             progress_text: Style::new().italic().light_blue(),
+            note_list_item: Style::new().italic().dark_gray(),
         }
     }
 }
@@ -123,13 +125,51 @@ impl<'a> ResultRenderer<'a> {
     }
 
     fn format_result_items(&self) -> Vec<ListItem<'a>> {
-        self.state
+        if self.state.output.viewport_size == 0 {
+            return self
+                .state
+                .output
+                .results
+                .iter()
+                .enumerate()
+                .map(|(i, num)| self.format_result_item(i, num))
+                .collect();
+        }
+
+        let total_items = self.state.output.results.len();
+        let viewport_end =
+            (self.state.output.viewport_start + self.state.output.viewport_size).min(total_items);
+
+        let mut items = Vec::new();
+
+        let has_items_above = self.state.output.viewport_start > 0;
+        if has_items_above {
+            items.push(
+                ListItem::new("↑ ↑ ↑ More items above ↑ ↑ ↑").style(self.styles.note_list_item),
+            );
+        }
+
+        let viewport_items: Vec<ListItem> = self
+            .state
             .output
             .results
             .iter()
             .enumerate()
+            .skip(self.state.output.viewport_start)
+            .take(viewport_end - self.state.output.viewport_start)
             .map(|(i, num)| self.format_result_item(i, num))
-            .collect()
+            .collect();
+
+        items.extend(viewport_items);
+
+        let has_items_below = viewport_end < total_items;
+        if has_items_below {
+            items.push(
+                ListItem::new("↓ ↓ ↓ More items below ↓ ↓ ↓").style(self.styles.note_list_item),
+            );
+        }
+
+        items
     }
 
     fn format_result_item(&self, index: usize, num: &'a BigInt) -> ListItem<'a> {
@@ -138,12 +178,14 @@ impl<'a> ResultRenderer<'a> {
         } else {
             num.to_string()
         };
-        let formatted = if index == self.state.output.list_state.selected().unwrap_or(0) {
+
+        let is_selected = index == self.state.output.list_state.selected().unwrap_or(0);
+
+        let formatted = if is_selected {
             format!("[{}]", formatted).bold().yellow().to_string()
         } else {
             formatted
         };
-
 
         let style = if index % 2 == 0 {
             Style::new().white()
@@ -155,6 +197,9 @@ impl<'a> ResultRenderer<'a> {
     }
 }
 
-pub fn render(state: &AppState) -> List {
+pub fn render(state: &mut AppState, area: Rect) -> List {
+    let viewport_height = area.height.saturating_sub(8) as usize;
+    state.output.viewport_size = viewport_height.max(1);
+
     ResultRenderer::new(state).render()
 }

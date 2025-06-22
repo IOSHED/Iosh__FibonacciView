@@ -101,11 +101,19 @@ fn render_status_section(
     let status_block = create_bordered_block(styles.status);
     frame.render_widget(&status_block, areas.status);
 
+    let position_info = if !state.output.results.is_empty() {
+        let selected = state.output.list_state.selected().unwrap_or(0);
+        let total = state.output.results.len();
+        format!("{}/{}", selected + 1, total)
+    } else {
+        String::from("0/0")
+    };
+
     let status_text = format!(
-        "📊 Calculations: {} | 📋 Results: {} | 🔍 Filters: {} | ⌨️  Press 'q' to quit",
+        "📊 Calculations: {} | 📍 Position: {} | 🔍 Filters: {} | ⌨️  Press 'q' to quit",
         state.count_use,
-        state.output.results.len(),
-        state.filters.filters.len()
+        position_info,
+        state.filters.filters.len(),
     );
 
     let status_line = Line::from(status_text).centered().style(styles.status);
@@ -134,7 +142,7 @@ fn render_main_sections(
     let inner_right = output_block.inner(areas.right);
 
     frame.render_widget(input_panel::render(state), inner_left);
-    frame.render_widget(output_panel::render(state), inner_right);
+    frame.render_widget(output_panel::render(state, inner_right), inner_right);
 }
 
 fn render_progress_section(

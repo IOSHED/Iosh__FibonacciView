@@ -10,6 +10,9 @@ const DEFAULT_RANGE_START: &str = "0";
 const DEFAULT_RANGE_END: &str = "20";
 const DEFAULT_FILTER_VALUE: &str = "10";
 
+const PADDING_SCROLLING: usize = 1;
+const SPEED_SCROLLING: usize = 1;
+
 
 #[derive(PartialEq)]
 pub enum InputMode {
@@ -76,6 +79,8 @@ pub struct OutputState {
     pub results: Vec<BigInt>,
     pub progress: Option<u8>,
     pub list_state: ListState,
+    pub viewport_start: usize,
+    pub viewport_size: usize,
     receiver: Option<FiboTaskReceiver>,
 }
 
@@ -141,9 +146,57 @@ impl AppState {
         }
 
         let selected = self.output.list_state.selected().unwrap_or(0);
-        let new_index =
-            Self::calculate_new_index(selected, direction, self.output.results.len()).await;
-        self.output.list_state.select(Some(new_index));
+
+        let new_selected = match direction {
+            1 => (selected + 1).min(self.output.results.len() - 1),
+            -1 => selected.saturating_sub(1),
+            _ => selected,
+        };
+
+        self.output.list_state.select(Some(new_selected));
+        self.update_viewport(new_selected, direction).await;
+    }
+
+    async fn update_viewport(&mut self, selected_index: usize, direction: i32) {
+        let total_items = self.output.results.len();
+
+        if self.output.viewport_size <= SPEED_SCROLLING + 1 {
+            return;
+        }
+
+        match direction {
+            1 => {
+                if selected_index
+                    > self.output.viewport_start
+                        + self
+                            .output
+                            .viewport_size
+                            .saturating_sub(PADDING_SCROLLING + 1)
+                {
+                    self.output.viewport_start =
+                        self.output.viewport_start.saturating_add(SPEED_SCROLLING);
+                }
+            }
+            -1 => {
+                if selected_index
+                    < self
+                        .output
+                        .viewport_start
+                        .saturating_add(PADDING_SCROLLING)
+                {
+                    self.output.viewport_start =
+                        self.output.viewport_start.saturating_sub(SPEED_SCROLLING);
+                }
+            }
+            _ => {}
+        }
+
+        if self.output.viewport_start + self.output.viewport_size > total_items {
+            self.output.viewport_start = total_items.saturating_sub(self.output.viewport_size);
+        }
+        if self.output.viewport_start > total_items {
+            self.output.viewport_start = 0;
+        }
     }
 
     pub async fn update_progress_bar(&mut self) {
@@ -156,11 +209,13 @@ impl AppState {
                 FiboTaskResult::Calculation(progress) => {
                     self.output.results.clear();
                     self.output.progress = Some(progress);
+                    self.output.viewport_start = 0;
                 }
                 FiboTaskResult::Result(res) => {
                     self.output.results = res;
                     self.output.list_state.select(Some(0));
                     self.output.progress = None;
+                    self.output.viewport_start = 0;
                 }
             }
         }
@@ -194,14 +249,6 @@ impl AppState {
     async fn validate_range(&mut self, params: &CalculationParams) {
         if params.range_end <= params.range_start {
             self.error = Some("Range end must be > start".to_string());
-        }
-    }
-
-    async fn calculate_new_index(current: usize, direction: i32, total: usize) -> usize {
-        match direction {
-            1 => (current + 1) % total,
-            -1 => (current + total - 1) % total,
-            _ => current,
         }
     }
 
