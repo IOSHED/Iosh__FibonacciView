@@ -1,6 +1,13 @@
 use crate::builder::FiboBuilder;
+use crate::implementation::matmul::MatmulFibo;
 use crate::task;
 use crate::task::FiboTaskReceiver;
+use num_bigint::BigInt;
+use crate::implementation::lineal::LinealFibo;
+
+pub trait ImplementationFibo: Iterator<Item = BigInt> {
+    fn new(start_nums: Option<(BigInt, BigInt)>) -> Self;
+}
 
 pub struct FiboCalc {
     builder: FiboBuilder,
@@ -15,7 +22,7 @@ impl FiboCalc {
         let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
 
         tokio::spawn(async move {
-            task::calculate_fibo_task(self.builder, sender).await;
+            task::calculate_fibo_task::<LinealFibo>(self.builder, sender).await;
         });
 
         receiver

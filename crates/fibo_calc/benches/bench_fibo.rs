@@ -4,13 +4,13 @@ use std::hint::black_box;
 use tokio::runtime::Runtime;
 
 fn bench_fibo_calc(c: &mut Criterion) {
-    c.bench_function("fibo_calc 1000..1100", |b| {
+    c.bench_function("fibo_calc 10000..11000", |b| {
         let rt = Runtime::new().unwrap();
 
         b.iter(|| {
             rt.block_on(async {
                 let mut builder = FiboBuilder::default();
-                builder.set_range_by_id(Some(1000..1100));
+                builder.set_range_by_id(Some(10000..11000));
 
                 let calc = FiboCalc::new(builder);
                 let mut receiver = calc.calc_background();

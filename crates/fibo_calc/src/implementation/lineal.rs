@@ -1,3 +1,4 @@
+use crate::calculator::ImplementationFibo;
 use num_bigint::BigInt;
 
 pub struct LinealFibo {
@@ -5,8 +6,8 @@ pub struct LinealFibo {
     pre_last: BigInt,
 }
 
-impl LinealFibo {
-    pub fn new(start_nums: Option<(BigInt, BigInt)>) -> Self {
+impl ImplementationFibo for LinealFibo {
+    fn new(start_nums: Option<(BigInt, BigInt)>) -> Self {
         if let Some((start_num1, start_num2)) = start_nums {
             return Self {
                 last: start_num2,

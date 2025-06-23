@@ -1,13 +1,15 @@
 use crate::builder::FilterFn;
-use crate::implementation::lineal::LinealFibo;
-use crate::{FiboBuilder, FiboTaskResult};
+use crate::calculator::ImplementationFibo;
+use crate::{FiboBuilder, FiboTaskResult, task};
 use num_bigint::BigInt;
 use rayon::prelude::*;
 
 const CHUNK_SIZE: usize = 1000;
 
 
-pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::FiboTaskSender) {
+pub async fn calculate_fibo_task<I: ImplementationFibo>(
+    builder: FiboBuilder, sender: task::FiboTaskSender,
+) {
     if builder.is_none_filter() {
         let _ = sender.send(FiboTaskResult::Result(vec![]));
         return;
@@ -43,11 +45,11 @@ pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::Fibo
     }
 
     if range.end > 2 {
-        let implementation_fibo = LinealFibo::new(Some(start_nums));
+        let impl_fibo = I::new(Some(start_nums));
         let skip_count = if range.start > 2 { range.start - 2 } else { 0 };
         let take_count = range.end - 2;
 
-        for num in implementation_fibo.skip(skip_count).take(take_count) {
+        for num in impl_fibo.skip(skip_count).take(take_count) {
             result.push(num);
             processed += 1;
 
@@ -64,7 +66,7 @@ pub async fn calculate_fibo_task(builder: FiboBuilder, sender: crate::task::Fibo
 }
 
 async fn apply_filters_with_progress(
-    sender: &crate::task::FiboTaskSender, numbers: Vec<BigInt>, filters: &[FilterFn],
+    sender: &task::FiboTaskSender, numbers: Vec<BigInt>, filters: &[FilterFn],
 ) -> Vec<BigInt> {
     let total_items = numbers.len();
     if total_items == 0 {
@@ -95,7 +97,7 @@ async fn apply_filters_with_progress(
     filtered
 }
 
-async fn send_progress(sender: &crate::task::FiboTaskSender, processed: usize, total_items: usize) {
+async fn send_progress(sender: &task::FiboTaskSender, processed: usize, total_items: usize) {
     let progress = ((processed as f32 / total_items as f32) * 100.0).clamp(0.0, 100.0) as u8;
     let _ = sender.send(FiboTaskResult::Calculation(progress));
 }
@@ -106,13 +108,15 @@ mod tests {
 
     use super::*;
     use crate::FiboBuilder;
+    use crate::implementation::lineal::LinealFibo;
+    use crate::implementation::matmul::MatmulFibo;
     use crate::task::{FiboTaskReceiver, FiboTaskResult};
     use num_bigint::BigInt;
     use std::ops::Range;
     use test_case::test_case;
     use tokio::sync::mpsc;
 
-    fn make_sender() -> (crate::task::FiboTaskSender, FiboTaskReceiver) {
+    fn make_sender() -> (task::FiboTaskSender, FiboTaskReceiver) {
         mpsc::unbounded_channel()
     }
 
@@ -120,7 +124,7 @@ mod tests {
     async fn test_none_filter() {
         let (tx, mut rx) = make_sender();
         let builder = FiboBuilder::default();
-        calculate_fibo_task(builder, tx).await;
+        calculate_fibo_task::<MatmulFibo>(builder, tx).await;
         let msg = rx.recv().await.unwrap();
         assert!(matches!(msg, FiboTaskResult::Result(ref v) if v.is_empty()));
     }
@@ -131,7 +135,7 @@ mod tests {
         let mut builder = FiboBuilder::default();
         builder.set_range_by_id(Some(5..3)); // start > end
         builder.set_start_nums(Some((0.into(), 1.into())));
-        calculate_fibo_task(builder, tx).await;
+        calculate_fibo_task::<LinealFibo>(builder, tx).await;
         let msg = rx.recv().await.unwrap();
         assert!(matches!(msg, FiboTaskResult::Result(ref v) if v.is_empty()));
     }
@@ -142,7 +146,7 @@ mod tests {
         let mut builder = FiboBuilder::default();
         builder.set_range_by_id(Some(2..2)); // empty range
         builder.set_start_nums(Some((0.into(), 1.into())));
-        calculate_fibo_task(builder, tx).await;
+        calculate_fibo_task::<LinealFibo>(builder, tx).await;
         let msg = rx.recv().await.unwrap();
         assert!(matches!(msg, FiboTaskResult::Result(ref v) if v.is_empty()));
     }
@@ -159,7 +163,7 @@ mod tests {
         let mut builder = FiboBuilder::default();
         builder.set_range_by_id(Some(range.clone()));
         builder.set_start_nums(Some((start.0.into(), start.1.into())));
-        calculate_fibo_task(builder, tx).await;
+        calculate_fibo_task::<MatmulFibo>(builder, tx).await;
 
         let mut progresses = vec![];
         let mut result = None;
@@ -167,7 +171,6 @@ mod tests {
         while let Some(msg) = rx.recv().await {
             match msg {
                 FiboTaskResult::Calculation(p) => {
-                    // Only add progress if it's not a duplicate 100%
                     if progresses.last() != Some(&100) || p != 100 {
                         progresses.push(p);
                     }
@@ -193,7 +196,7 @@ mod tests {
         builder.set_range_by_id(Some(0..12));
         builder.set_start_nums(Some((0.into(), 1.into())));
         builder.add_filter(|n| n % 2u8 == BigInt::from(0));
-        calculate_fibo_task(builder, tx).await;
+        calculate_fibo_task::<LinealFibo>(builder, tx).await;
 
         let mut progress = vec![];
         let mut result = None;

@@ -60,6 +60,5 @@ cargo tarpaulin --exclude-files "examples/*" --output-dir "./target/coverage/" -
 4) Smart cache
 5) Cntr+C for copy selected num and Cntr+Shift+C for copy all
 6) More shortcuts 
-7) tests
 
 ---
