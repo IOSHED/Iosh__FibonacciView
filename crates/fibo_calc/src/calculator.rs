@@ -27,4 +27,8 @@ impl FiboCalc {
 
         receiver
     }
+
+    pub fn calc_one_number(self, n: BigInt) -> BigInt {
+        MatmulFibo::new(self.builder.get_start_nums()).calc_one(n)
+    }
 }
