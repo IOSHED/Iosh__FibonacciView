@@ -4,6 +4,7 @@ use num_traits::{One, Zero};
 
 use std::ops::{Mul, MulAssign};
 
+#[derive(Debug, PartialEq)]
 struct M2x2 {
     n00: BigInt,
     n01_and_n10: BigInt,
@@ -114,6 +115,13 @@ mod tests {
     use super::*;
     use num_bigint::BigInt;
     use test_case::test_case;
+
+    #[test]
+    fn test_default_builder_in_new_method() {
+        let fibo = MatmulFibo::new(None);
+        assert_eq!(fibo.fibo, M2x2::new(BigInt::one(), BigInt::zero(), BigInt::one()));
+        assert_eq!(fibo.step, M2x2::new(BigInt::one(), BigInt::one(), BigInt::zero()));
+    }
 
     #[test]
     fn test_default_initialization() {
