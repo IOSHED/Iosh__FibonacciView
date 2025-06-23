@@ -50,9 +50,9 @@ pub struct MatmulFibo {
 impl ImplementationFibo for MatmulFibo {
     fn new(start_nums: Option<(BigInt, BigInt)>) -> Self {
         if let Some((a, b)) = start_nums {
-            let n00 = b.clone();
-            let n01_and_n10 = a.clone();
             let n11 = &b - &a;
+            let n01_and_n10 = a;
+            let n00 = b;
 
             return Self {
                 fibo: M2x2::new(n00, n01_and_n10, n11),
